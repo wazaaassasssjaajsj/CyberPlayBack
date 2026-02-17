@@ -49,10 +49,9 @@ letter-spacing:3px;
 header p{
 margin-top:10px;
 opacity:0.8;
-font-size:18px;
 }
 
-/* ================= MENU BUTTON ================= */
+/* ================= HAMBURGUESA ================= */
 
 .menu-btn{
 position:fixed;
@@ -61,7 +60,7 @@ right:25px;
 width:40px;
 height:30px;
 cursor:pointer;
-z-index:2000;
+z-index:3000;
 display:flex;
 flex-direction:column;
 justify-content:space-between;
@@ -71,11 +70,11 @@ justify-content:space-between;
 height:5px;
 background:#ff6a00;
 border-radius:5px;
-transition:0.6s cubic-bezier(.77,0,.18,1);
+transition:0.5s;
 }
 
 .menu-btn.active span:nth-child(1){
-transform:translateY(12px) rotate(45deg) scaleX(1.3);
+transform:translateY(12px) rotate(45deg);
 }
 
 .menu-btn.active span:nth-child(2){
@@ -83,18 +82,18 @@ opacity:0;
 }
 
 .menu-btn.active span:nth-child(3){
-transform:translateY(-12px) rotate(-45deg) scaleX(1.3);
+transform:translateY(-12px) rotate(-45deg);
 }
 
-/* ================= OVERLAY ================= */
+/* ================= OVERLAY MISMA ESTÉTICA ================= */
 
 .overlay{
 position:fixed;
 inset:0;
-background:#ff6a00;
+background:linear-gradient(180deg,#000,#111);
 clip-path:circle(0% at 100% 0%);
-transition:0.8s cubic-bezier(.77,0,.18,1);
-z-index:1500;
+transition:0.7s cubic-bezier(.77,0,.18,1);
+z-index:2000;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -105,18 +104,10 @@ flex-direction:column;
 clip-path:circle(150% at 50% 50%);
 }
 
-.overlay-logo{
-font-size:45px;
-font-weight:bold;
+.overlay h2{
+color:#ff6a00;
+font-size:40px;
 margin-bottom:40px;
-opacity:0;
-transform:translateY(-40px);
-transition:0.6s ease 0.4s;
-}
-
-.overlay.active .overlay-logo{
-opacity:1;
-transform:translateY(0);
 }
 
 .overlay ul{
@@ -129,7 +120,7 @@ font-size:22px;
 margin:18px 0;
 opacity:0;
 transform:translateY(30px);
-transition:0.5s ease;
+transition:0.5s;
 }
 
 .overlay.active li{
@@ -149,15 +140,13 @@ margin:auto;
 .section h2{
 color:#ff6a00;
 margin-bottom:30px;
-font-size:28px;
 }
-
-/* GRID PARA PC */
 
 .cards-container{
 display:flex;
 flex-direction:column;
 gap:20px;
+align-items:center;
 }
 
 .card{
@@ -166,6 +155,8 @@ border:1px solid #ff6a00;
 padding:25px;
 border-radius:12px;
 transition:0.3s;
+width:100%;
+max-width:400px;
 }
 
 .card:hover{
@@ -248,25 +239,23 @@ justify-content:center;
 width:300px;
 }
 
-.chat-window{
-width:350px;
-}
-
 }
 </style>
 </head>
 <body>
 
+<!-- MENU BUTTON -->
 <div class="menu-btn" id="menuBtn">
 <span></span>
 <span></span>
 <span></span>
 </div>
 
+<!-- OVERLAY -->
 <div class="overlay" id="overlay">
-<div class="overlay-logo">PLAYBACK</div>
+<h2>CYBER PLAYBACK</h2>
 <ul>
-<li>📞 +54 9 381 507-4982</li>
+<li>📞 +54 9 381 351-5470</li>
 <li>📧 cyberplayback@gmail.com</li>
 <li>💳 MercadoPago</li>
 <li>💵 Efectivo</li>
@@ -283,7 +272,9 @@ width:350px;
 
 <section class="section">
 <h2>📍 Dirección</h2>
+<div class="cards-container">
 <div class="card">25 DE MAYO 657</div>
+</div>
 </section>
 
 <section class="section">
@@ -295,7 +286,14 @@ width:350px;
 </div>
 </section>
 
+<section class="section">
+<h2>🕒 Horarios</h2>
+<div class="cards-container">
+<div class="card">Abierto 24HS</div>
+</div>
+</section>
 
+<!-- CHAT -->
 <div class="chat-btn" id="chatBtn">💬</div>
 
 <div class="chat-window" id="chatWindow">
@@ -311,6 +309,7 @@ width:350px;
 <script>
 const menuBtn=document.getElementById("menuBtn");
 const overlay=document.getElementById("overlay");
+
 menuBtn.addEventListener("click",()=>{
 menuBtn.classList.toggle("active");
 overlay.classList.toggle("active");
@@ -318,10 +317,11 @@ overlay.classList.toggle("active");
 
 const chatBtn=document.getElementById("chatBtn");
 const chatWindow=document.getElementById("chatWindow");
+
 chatBtn.addEventListener("click",()=>{
 chatWindow.classList.toggle("active");
 });
 </script>
 
 </body>
-</html>
+  </html>
