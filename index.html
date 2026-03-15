@@ -12,7 +12,9 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
                         brandOrange: '#ff5500',
                         darkSection: '#18181b',
@@ -30,6 +32,7 @@
         .dark .hide-scrollbar::-webkit-scrollbar-track { background: #333; }
         .hide-scrollbar::-webkit-scrollbar-thumb { background: #ff5500; border-radius: 10px; }
         
+        /* Animación y estilos para el slider de opiniones */
         @keyframes slide {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); } 
@@ -39,19 +42,26 @@
             width: max-content;
             animation: slide 50s linear infinite;
         }
-        .carousel-track:hover { animation-play-state: paused; }
-        .review-card { width: 340px; flex-shrink: 0; white-space: normal; }
-        
+        .carousel-track:hover {
+            animation-play-state: paused;
+        }
+        .review-card {
+            width: 340px;
+            flex-shrink: 0;
+            white-space: normal;
+        }
+        /* Máscara para hacer que los bordes del slider se desvanezcan suavemente */
         .mask-edges {
             mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
             -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
 
-        /* Estilo para el logo en el nav */
+        /* Estilo para que el logo se vea correctamente */
         .nav-logo {
-            height: 32px; /* Ajusta según prefieras */
+            height: 38px; /* Tamaño ideal para el nav */
             width: auto;
             object-fit: contain;
+            image-rendering: -webkit-optimize-contrast; /* Para que no se vea borroso */
         }
     </style>
 </head>
@@ -61,10 +71,9 @@
 
     <nav class="flex justify-between items-center px-6 md:px-8 py-5 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <img src="logo.png" alt="CyberPlayBack Logo" class="nav-logo">
+            <img src="logo.png" alt="Logo" class="nav-logo">
             <div class="font-bold text-lg tracking-wide">CyberPlayBack</div>
         </div>
-        
         <div class="hidden md:flex space-x-8 text-[11px] font-bold tracking-widest text-gray-500 dark:text-gray-400">
             <a href="#tarifas" class="hover:text-brandOrange transition-colors">TARIFAS</a>
             <a href="#hardware" class="hover:text-brandOrange transition-colors">PRODUCTOS</a>
@@ -78,7 +87,7 @@
         </div>
     </nav>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-800 border-b border-gray-200 dark:divide-gray-800 bg-white dark:bg-darkSection text-center transition-colors">
+    <section class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-800 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection text-center transition-colors">
         <div class="py-8 md:py-12">
             <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">PC</p>
             <p class="text-4xl md:text-5xl font-extrabold text-brandOrange">+20</p>
@@ -93,85 +102,318 @@
         </div>
     </section>
 
+    <section class="py-12 md:py-16 px-6 md:px-8 max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 md:mb-10 gap-4">
+            <div>
+                <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">ESTADO EN TIEMPO REAL</p>
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Mapa de PCs</h2>
+            </div>
+            <div class="sm:text-right">
+                <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-1">DISPONIBLES</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-brandOrange">15/24</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4" id="pc-grid"></div>
+    </section>
+
+    <section id="tarifas" class="bg-white dark:bg-black py-16 px-6 md:px-8 transition-colors border-b border-gray-200 dark:border-none">
+        <div class="max-w-7xl mx-auto">
+            <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-widest mb-2">SECTOR ESPORT</p>
+            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 dark:text-white text-gray-900">Tarifas y Promos</h2>
+            <p class="text-brandOrange font-bold text-xl mb-10">Valor por Hora Suelta: $2.300</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-gray-100 dark:bg-darkCard p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-brandOrange transition-colors">
+                    <h3 class="text-2xl font-bold mb-2 dark:text-white text-gray-800">Promo 1</h3>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium mb-4">2 Horas + 5 Puntos</p>
+                    <p class="text-brandOrange font-extrabold text-2xl">$4.000</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-darkCard p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-brandOrange transition-colors">
+                    <h3 class="text-2xl font-bold mb-2 dark:text-white text-gray-800">Promo 2</h3>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium mb-4">5 Horas + 10 Puntos</p>
+                    <p class="text-brandOrange font-extrabold text-2xl">$9.000</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-darkCard p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-brandOrange transition-colors">
+                    <h3 class="text-2xl font-bold mb-2 dark:text-white text-gray-800">Promo 3</h3>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium mb-4">10 Horas + 15 Puntos</p>
+                    <p class="text-brandOrange font-extrabold text-2xl">$16.000</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-darkCard p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:border-brandOrange transition-colors">
+                    <h3 class="text-2xl font-bold mb-2 dark:text-white text-gray-800">Promo 4</h3>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium mb-4">20 Horas + 30 Puntos + 1H Free</p>
+                    <p class="text-brandOrange font-extrabold text-2xl">$23.000</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-darkCard p-6 rounded-2xl border border-blue-500 relative transition-colors shadow-sm dark:shadow-[0_0_15px_rgba(59,130,246,0.2)] lg:col-span-2">
+                    <span class="absolute -top-3 right-4 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Más Elegida</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2 text-blue-600 dark:text-blue-400">Promo Trasnoche 🌙</h3>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium sm:mb-0 mb-4">8 Horas de juego ininterrumpido</p>
+                        </div>
+                        <p class="text-blue-600 dark:text-blue-400 font-extrabold text-3xl">$9.000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="hardware" class="py-16 px-6 md:px-8 max-w-7xl mx-auto overflow-hidden">
+        <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">PERIFÉRICOS</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">Catálogo de Hardware</h2>
+        <div class="flex overflow-x-auto gap-4 md:gap-6 pb-6 hide-scrollbar cursor-grab active:cursor-grabbing snap-x">
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Accesorio</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Cargador Tipo C</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$13.000</p>
+            </div>
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Auriculares</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Sona T Dagger</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$63.000</p>
+            </div>
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Mando</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Joystick PS4</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$28.000</p>
+            </div>
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Accesorio</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Soporte para Auriculares</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$15.000</p>
+            </div>
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Mouse</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Redragon Invader</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$35.500</p>
+            </div>
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Mouse</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Redragon Cobra B/N</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$36.500</p>
+            </div>
+            <div class="snap-start min-w-[260px] border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
+                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Teclado</p>
+                <h4 class="font-bold text-lg mb-8 leading-tight">Kurama Rainbow B/N</h4>
+                <p class="text-2xl font-extrabold text-brandOrange">$63.000</p>
+            </div>
+        </div>
+        <p class="text-[10px] text-gray-400 tracking-widest mt-2"><i class="fas fa-arrows-alt-h mr-1"></i> DESLIZA PARA VER MÁS PRODUCTOS</p>
+    </section>
+
+    <section id="comida" class="py-10 px-6 md:px-8 max-w-7xl mx-auto overflow-hidden">
+        <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">KIOSCO</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">Snacks y Bebidas</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
+            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
+                <h4 class="font-bold text-lg mb-4">Galletas</h4>
+                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$2.300</p>
+            </div>
+            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
+                <h4 class="font-bold text-lg mb-4">Alfajores</h4>
+                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$1.600</p>
+            </div>
+            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
+                <h4 class="font-bold text-lg mb-4">Lata de Gaseosa</h4>
+                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$1.700</p>
+            </div>
+            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
+                <h4 class="font-bold text-lg mb-4">Saladix</h4>
+                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$1.000</p>
+            </div>
+        </div>
+    </section>
+
     <section id="opiniones" class="py-16 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 md:px-8 mb-8">
             <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">RESEÑAS</p>
             <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Opiniones de nuestros Clientes</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2"><i class="fas fa-hand-pointer mr-1"></i> Toca una reseña para leerla completa</p>
         </div>
+        
         <div class="relative w-full overflow-hidden mask-edges py-2">
-            <div class="carousel-track gap-4 md:gap-6 pr-4 md:pr-6" id="reviews-track"></div>
+            <div class="carousel-track gap-4 md:gap-6 pr-4 md:pr-6" id="reviews-track">
+                </div>
         </div>
     </section>
 
+    <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors pt-16 pb-8 px-6 md:px-8 text-sm mt-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+            <div>
+                <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">UBICACIÓN</h3>
+                <p class="mb-1 font-medium text-gray-800 dark:text-gray-200">25 de Mayo 657</p>
+                <p class="mb-1 text-gray-500 dark:text-gray-400">San Miguel de Tucumán</p>
+                <p class="mb-4 text-gray-500 dark:text-gray-400">Tucumán, Argentina</p>
+            </div>
+            <div>
+                <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">HORARIOS</h3>
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
+                    <span class="font-bold text-[11px] tracking-widest dark:text-gray-200">LUNES A SÁBADO</span>
+                    <span class="text-brandOrange font-bold text-[11px] tracking-widest">24 HORAS</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-[11px] tracking-widest dark:text-gray-200">DOMINGO</span>
+                    <span class="text-brandOrange font-bold text-[11px] tracking-widest">15:00 A 00:00</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">CONTACTO</h3>
+                <a href="https://wa.me/5493815074982" target="_blank" class="inline-block bg-brandOrange text-white text-[11px] font-bold tracking-widest py-3 px-6 rounded-full hover:bg-orange-600 transition-colors">
+                    <i class="fab fa-whatsapp mr-2 text-lg align-middle"></i> WHATSAPP
+                </a>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto text-center pt-8 border-t border-gray-100 dark:border-gray-800 text-[9px] font-bold text-gray-400 tracking-widest">
+            © 2026 CYBER PLAYBACK GAMING - SAN MIGUEL DE TUCUMÁN
+        </div>
+    </footer>
+
     <div id="review-modal" class="hidden fixed inset-0 z-[120] bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-darkCard rounded-3xl p-6 md:p-8 max-w-lg w-full relative transform scale-95 transition-transform duration-300 shadow-2xl border border-gray-200 dark:border-gray-700" id="review-modal-content">
-            <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-brandOrange transition-colors w-8 h-8 flex justify-center items-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-brandOrange dark:hover:text-brandOrange transition-colors w-8 h-8 flex justify-center items-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
                 <i class="fas fa-times text-xl"></i>
             </button>
-            <div id="modal-stars" class="flex gap-1 mb-4"></div>
-            <h3 id="modal-name" class="font-bold text-xl mb-4 dark:text-white"></h3>
-            <p id="modal-text" class="text-gray-600 dark:text-gray-300 text-lg italic leading-relaxed"></p>
+            <div class="flex items-center gap-3 mb-4">
+                <div id="modal-stars" class="flex gap-1 text-base"></div>
+            </div>
+            <h3 id="modal-name" class="font-bold text-xl md:text-2xl mb-4 dark:text-white"></h3>
+            <p id="modal-text" class="text-gray-600 dark:text-gray-300 text-base md:text-lg leading-relaxed italic"></p>
         </div>
     </div>
 
     <script>
-        // Sonido de movimiento
+        // --- SONIDOS NUEVOS (Movimiento Suave) ---
         const moveSound = document.getElementById('move-sound');
-        moveSound.volume = 0.3;
+        moveSound.volume = 0.4;
 
         function playMove() {
             moveSound.currentTime = 0;
             moveSound.play().catch(()=>{});
         }
 
-        // --- TEMA OSCURO CON SONIDO ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const htmlElement = document.documentElement;
+        // --- GENERACIÓN DE PCs ---
+        const pcGrid = document.getElementById('pc-grid');
+        const baseSpecs = [
+            { gpu: '4070', cpu: 'i7-12700K', hz: '165HZ' },
+            { gpu: '3080', cpu: 'i7-12700K', hz: '165HZ' },
+            { gpu: '3070', cpu: 'i5-12400F', hz: '144HZ' },
+            { gpu: '3060', cpu: 'i5-12400F', hz: '144HZ' }
+        ];
 
-        themeToggleBtn.addEventListener('click', () => {
-            playMove(); // Sonido al cambiar tema
-            htmlElement.classList.toggle('dark');
-            const isDark = htmlElement.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            themeIcon.classList.replace(isDark ? 'fa-moon' : 'fa-sun', isDark ? 'fa-sun' : 'fa-moon');
-            themeIcon.classList.toggle('text-yellow-400', isDark);
+        for (let i = 1; i <= 24; i++) {
+            const spec = baseSpecs[(i - 1) % baseSpecs.length];
+            const pcNumber = i.toString().padStart(2, '0');
+            const card = document.createElement('div');
+            card.className = "group border border-gray-200 dark:border-gray-800 p-3 md:p-4 h-24 md:h-28 rounded-2xl relative overflow-hidden transition-all duration-300 hover:bg-brandOrange dark:hover:bg-brandOrange hover:border-brandOrange cursor-pointer bg-gray-100 dark:bg-darkCard";
+            card.innerHTML = `
+                <div class="flex items-center space-x-2 mb-2 md:mb-4 group-hover:text-white transition-colors">
+                    <span class="w-2 h-2 rounded-full bg-red-500 group-hover:bg-white shadow-[0_0_8px_rgba(239,68,68,0.8)] group-hover:shadow-none"></span>
+                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider text-gray-600 dark:text-gray-400 group-hover:text-white">PC ${pcNumber}</span>
+                </div>
+                <div class="absolute bottom-3 md:bottom-4 left-3 md:left-4 transition-all duration-300 transform group-hover:-translate-y-4 group-hover:opacity-0">
+                    <p class="font-extrabold text-lg md:text-xl text-gray-900 dark:text-white">${spec.gpu}</p>
+                </div>
+                <div class="absolute bottom-3 md:bottom-4 left-3 md:left-4 opacity-0 transform translate-y-4 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 text-white">
+                    <p class="text-[9px] md:text-[10px] font-medium leading-tight">${spec.cpu}</p>
+                    <p class="text-[9px] md:text-[10px] font-medium leading-tight">RTX ${spec.gpu}</p>
+                    <p class="text-[9px] md:text-[10px] font-medium leading-tight">${spec.hz}</p>
+                </div>`;
+            pcGrid.appendChild(card);
+        }
+
+        // --- LÓGICA DE OPINIONES ---
+        const reviews = [
+            { name: "Su maldonado", stars: 5, color: "text-yellow-400", text: "Quiero destacar la atencion de la mujercita que esta de tarde. Me sorprendió la delicadeza y respeto con la que atiende..." },
+            { name: "Juanchi", stars: 5, color: "text-yellow-400", text: "Excelente atencion y tremenda limpieza del local. Muy buenas pc genios..." },
+            { name: "Antonio", stars: 5, color: "text-yellow-400", text: "Hermoso lugar para pasar la tarde jugando con tus amigos!!" },
+            { name: "Felipe Luna", stars: 5, color: "text-yellow-400", text: "muy buena experiencia!!!! la primera vez que fui a un cyber, totalmente recomendable..." },
+            { name: "A. Stark", stars: 4, color: "text-yellow-500", text: "Me encanto el lugar, buen ambiente, hermosas computadoras, buen Internet..." },
+            { name: "ale jan drito", stars: 3, color: "text-orange-400", text: "fui anoche y lo sucio que tienen el lugar es decepcionante..." },
+            { name: "Eze Quiel", stars: 3, color: "text-orange-400", text: "Que mala atencion manejan en el turno noche, pésima amigo..." },
+            { name: "Ignacio Pro", stars: 1, color: "text-red-500", text: "El domingo tuve una mala experiencia con el vaguito nuevo de la tarde..." }
+        ];
+
+        const reviewsTrack = document.getElementById('reviews-track');
+        const infiniteReviews = [...reviews, ...reviews];
+
+        infiniteReviews.forEach(review => {
+            let starsHtml = '';
+            for(let i = 1; i <= 5; i++) {
+                if(i <= review.stars) starsHtml += `<i class="fas fa-star ${review.color}"></i>`;
+                else starsHtml += `<i class="fas fa-star text-gray-300 dark:text-gray-600"></i>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = "review-card border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col gap-3 shadow-sm cursor-pointer";
+            card.onclick = () => openReviewModal(review);
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <h4 class="font-bold text-lg leading-tight dark:text-white pr-2">${review.name}</h4>
+                    <div class="text-[12px] flex gap-1 pt-1">${starsHtml}</div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 italic flex-grow line-clamp-4">"${review.text}"</p>
+                <div class="text-[10px] text-brandOrange font-bold tracking-widest mt-2 uppercase">Leer completa</div>
+            `;
+            reviewsTrack.appendChild(card);
         });
 
-        // --- LÓGICA DE MODAL CON SONIDO ---
+        // Funciones del Modal
         const reviewModal = document.getElementById('review-modal');
         const modalContent = document.getElementById('review-modal-content');
-
+        const closeReviewBtn = document.getElementById('close-modal');
+        
         function openReviewModal(review) {
-            playMove(); // Sonido al abrir algo
+            playMove(); // Sonido al abrir reseña
             document.getElementById('modal-name').textContent = review.name;
             document.getElementById('modal-text').textContent = `"${review.text}"`;
-            // ... (Lógica de estrellas omitida por espacio)
+            
+            let starsHtml = '';
+            for(let i = 1; i <= 5; i++) {
+                if(i <= review.stars) starsHtml += `<i class="fas fa-star ${review.color}"></i>`;
+                else starsHtml += `<i class="fas fa-star text-gray-300 dark:text-gray-600"></i>`;
+            }
+            document.getElementById('modal-stars').innerHTML = starsHtml;
+
             reviewModal.classList.remove('hidden');
             setTimeout(() => {
                 reviewModal.classList.remove('opacity-0');
-                modalContent.classList.replace('scale-95', 'scale-100');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
             }, 10);
         }
 
         function closeReviewModal() {
-            playMove(); // Sonido al cerrar
+            playMove(); // Sonido al cerrar reseña
             reviewModal.classList.add('opacity-0');
-            modalContent.classList.replace('scale-100', 'scale-95');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
             setTimeout(() => reviewModal.classList.add('hidden'), 300);
         }
 
-        document.getElementById('close-modal').onclick = closeReviewModal;
+        closeReviewBtn.addEventListener('click', closeReviewModal);
+        reviewModal.addEventListener('click', (e) => { if(e.target === reviewModal) closeReviewModal(); });
 
-        // --- CARGA DE RESEÑAS (Simplificada para el ejemplo) ---
-        const reviews = [{ name: "Su maldonado", stars: 5, color: "text-yellow-400", text: "Excelente atención..." }];
-        const reviewsTrack = document.getElementById('reviews-track');
-        reviews.forEach(review => {
-            const card = document.createElement('div');
-            card.className = "review-card border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors cursor-pointer";
-            card.onclick = () => openReviewModal(review);
-            card.innerHTML = `<h4 class="font-bold dark:text-white">${review.name}</h4><p class="text-sm italic line-clamp-2">"${review.text}"</p>`;
-            reviewsTrack.appendChild(card);
+        // --- TEMA OSCURO ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            themeIcon.classList.replace('fa-moon', 'fa-sun');
+            themeIcon.classList.add('text-yellow-400');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            playMove(); // Sonido al cambiar tema
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                themeIcon.classList.add('text-yellow-400');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                themeIcon.classList.remove('text-yellow-400');
+            }
         });
     </script>
 </body>
