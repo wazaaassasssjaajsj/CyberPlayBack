@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberPlayBack</title>
+    <title>CyberPlayBack | Gaming Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <meta name="theme-color" content="#ff5500">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         brandOrange: '#ff5500',
                         darkSection: '#18181b',
@@ -26,267 +29,188 @@
         }
     </script>
     <style>
-        body {
-            transition: background-color 0.3s ease, color 0.3s ease;
+        body { transition: background-color 0.3s ease; }
+        .hide-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .hide-scrollbar::-webkit-scrollbar-thumb { background: #ff5500; border-radius: 10px; }
+        
+        #chat-window {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0.9) translateY(40px);
+            opacity: 0;
+            pointer-events: none;
         }
-        .hide-scrollbar::-webkit-scrollbar {
-            height: 6px;
+        #chat-window.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
-        .hide-scrollbar::-webkit-scrollbar-track {
-            background: #e5e7eb;
-            border-radius: 10px;
-        }
-        .dark .hide-scrollbar::-webkit-scrollbar-track {
-            background: #333;
-        }
-        .hide-scrollbar::-webkit-scrollbar-thumb {
-            background: #ff5500;
-            border-radius: 10px;
-        }
+        .glass { backdrop-filter: blur(16px); background: rgba(255, 255, 255, 0.8); }
+        .dark .glass { background: rgba(30, 30, 36, 0.9); }
     </style>
 </head>
 <body class="antialiased font-sans bg-[#fcfcfc] text-[#111] dark:bg-darkBg dark:text-gray-100">
 
+    <div id="pwa-banner" class="hidden fixed top-0 left-0 w-full bg-brandOrange text-white p-3 z-[100] flex justify-between items-center md:hidden shadow-lg">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-mobile-alt"></i>
+            <span class="text-[10px] font-bold tracking-widest uppercase">Instalar App CyberPlayBack</span>
+        </div>
+        <button id="pwa-install" class="bg-white text-brandOrange px-4 py-1 rounded-full text-[10px] font-black uppercase">Descargar</button>
+    </div>
+
     <nav class="flex justify-between items-center px-6 md:px-8 py-5 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors sticky top-0 z-50">
-        <div class="font-bold text-lg tracking-wide">
-            CyberPlayBack 
-        </div>
+        <div class="font-bold text-lg tracking-wide uppercase">CyberPlayBack</div>
         <div class="hidden md:flex space-x-8 text-[11px] font-bold tracking-widest text-gray-500 dark:text-gray-400">
-            <a href="#tarifas" class="hover:text-brandOrange transition-colors">TARIFAS</a>
-            <a href="#hardware" class="hover:text-brandOrange transition-colors">PRODUCTOS</a>
-            <a href="#comida" class="hover:text-brandOrange transition-colors">KIOSCO</a>
+            <a href="#tarifas" class="hover:text-brandOrange transition-colors uppercase">Tarifas</a>
+            <a href="#hardware" class="hover:text-brandOrange transition-colors uppercase">Productos</a>
+            <a href="#comida" class="hover:text-brandOrange transition-colors uppercase">Kiosco</a>
         </div>
-        <div class="flex items-center gap-4 text-[11px] font-bold text-brandOrange tracking-widest">
-            <span class="hidden sm:inline">ABIERTO 24 HORAS</span>
-            <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+        <div class="flex items-center gap-4">
+            <span class="hidden sm:inline text-[10px] font-bold text-brandOrange tracking-widest uppercase">Abierto 24hs</span>
+            <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-yellow-400 transition-all">
                 <i class="fas fa-moon text-lg" id="theme-icon"></i>
             </button>
         </div>
     </nav>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-800 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection text-center transition-colors">
-        <div class="py-8 md:py-12">
-            <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">PC</p>
-            <p class="text-4xl md:text-5xl font-extrabold text-brandOrange">+20</p>
-        </div>
-        <div class="py-8 md:py-12">
-            <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">LATENCIA</p>
-            <p class="text-4xl md:text-5xl font-extrabold text-brandOrange">60ms</p>
-        </div>
-        <div class="py-8 md:py-12">
-            <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">DISPONIBILIDAD</p>
-            <p class="text-4xl md:text-5xl font-extrabold text-brandOrange">24/7</p>
-        </div>
+    <section class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-800 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection text-center">
+        <div class="py-10"><p class="text-[11px] font-bold text-gray-500 tracking-widest mb-1 uppercase">PCs Disponibles</p><p class="text-5xl font-extrabold text-brandOrange">15/24</p></div>
+        <div class="py-10"><p class="text-[11px] font-bold text-gray-500 tracking-widest mb-1 uppercase">Fibra Óptica</p><p class="text-5xl font-extrabold text-brandOrange">600Mb</p></div>
+        <div class="py-10"><p class="text-[11px] font-bold text-gray-500 tracking-widest mb-1 uppercase">Latencia Promedio</p><p class="text-5xl font-extrabold text-brandOrange">45ms</p></div>
     </section>
 
-    <section class="py-12 md:py-16 px-6 md:px-8 max-w-7xl mx-auto">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 md:mb-10 gap-4">
-            <div>
-                <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">ESTADO EN TIEMPO REAL</p>
-                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Mapa de PCs</h2>
-            </div>
-            <div class="sm:text-right">
-                <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-1">DISPONIBLES</p>
-                <p class="text-2xl md:text-3xl font-extrabold text-brandOrange">15/24</p>
-            </div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4" id="pc-grid">
-        </div>
+    <section class="py-16 px-6 md:px-8 max-w-7xl mx-auto">
+        <h2 class="text-3xl font-extrabold tracking-tighter mb-8 uppercase">Estado del Salón</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4" id="pc-grid"></div>
     </section>
 
-    <section id="tarifas" class="bg-darkSection dark:bg-black text-white py-16 px-6 md:px-8 transition-colors">
+    <section id="tarifas" class="bg-white dark:bg-black py-20 px-6 md:px-8 transition-colors">
         <div class="max-w-7xl mx-auto">
-            <p class="text-[11px] font-bold text-gray-400 tracking-widest mb-2">SECTOR ESPORT</p>
-            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">Tarifas y Promos</h2>
-            <p class="text-brandOrange font-bold text-xl mb-10">Valor por Hora Suelta: $2.300</p>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-[#222] dark:bg-darkCard p-6 rounded-2xl border border-gray-700 hover:border-brandOrange transition-colors">
-                    <h3 class="text-2xl font-bold mb-2">Promo 1</h3>
-                    <p class="text-gray-400 font-medium mb-4">2 Horas + 5 Puntos</p>
-                    <p class="text-brandOrange font-extrabold text-2xl">$4.000</p>
+            <h2 class="text-4xl font-black mb-12 tracking-tighter dark:text-white text-gray-900">TARIFAS & PROMOS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-100 dark:bg-darkCard p-8 rounded-3xl border border-gray-200 dark:border-gray-700 hover:border-brandOrange transition-all">
+                    <h3 class="text-xl font-bold mb-2 dark:text-white text-gray-800">HORA SIMPLE</h3>
+                    <p class="text-4xl font-black text-brandOrange">$2.300</p>
                 </div>
-                <div class="bg-[#222] dark:bg-darkCard p-6 rounded-2xl border border-gray-700 hover:border-brandOrange transition-colors">
-                    <h3 class="text-2xl font-bold mb-2">Promo 2</h3>
-                    <p class="text-gray-400 font-medium mb-4">5 Horas + 10 Puntos</p>
-                    <p class="text-brandOrange font-extrabold text-2xl">$9.000</p>
+                <div class="bg-gray-100 dark:bg-darkCard p-8 rounded-3xl border border-blue-500 relative md:col-span-2 shadow-sm dark:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                    <span class="absolute -top-3 left-8 bg-blue-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase">Especial</span>
+                    <h3 class="text-xl font-bold mb-2 dark:text-white text-gray-800">PROMO TRASNOCHE 🌙</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">8 horas seguidas de 00:00 a 08:00 AM</p>
+                    <p class="text-4xl font-black text-blue-500">$9.000</p>
                 </div>
-                <div class="bg-[#222] dark:bg-darkCard p-6 rounded-2xl border border-gray-700 hover:border-brandOrange transition-colors">
-                    <h3 class="text-2xl font-bold mb-2">Promo 3</h3>
-                    <p class="text-gray-400 font-medium mb-4">10 Horas + 15 Puntos</p>
-                    <p class="text-brandOrange font-extrabold text-2xl">$16.000</p>
-                </div>
-                <div class="bg-[#222] dark:bg-darkCard p-6 rounded-2xl border border-gray-700 hover:border-brandOrange transition-colors">
-                    <h3 class="text-2xl font-bold mb-2">Promo 4</h3>
-                    <p class="text-gray-400 font-medium mb-4">20 Horas + 30 Puntos + 1H Free</p>
-                    <p class="text-brandOrange font-extrabold text-2xl">$23.000</p>
-                </div>
-                <div class="bg-[#222] dark:bg-darkCard p-6 rounded-2xl border border-blue-500 relative transition-colors shadow-[0_0_15px_rgba(59,130,246,0.2)] lg:col-span-2">
-                    <span class="absolute -top-3 right-4 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Más Elegida</span>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-                        <div>
-                            <h3 class="text-2xl font-bold mb-2 text-blue-400">Promo Trasnoche 🌙</h3>
-                            <p class="text-gray-400 font-medium sm:mb-0 mb-4">8 Horas de juego ininterrumpido</p>
-                        </div>
-                        <p class="text-blue-400 font-extrabold text-3xl">$9.000</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
+        <div id="chat-window" class="w-[92vw] md:w-[450px] h-[600px] glass rounded-[32px] shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden mb-6 flex flex-col">
+            <div class="bg-brandOrange p-6 text-white flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg"><i class="fas fa-robot text-brandOrange text-2xl"></i></div>
+                    <div>
+                        <p class="text-xs font-black tracking-widest uppercase leading-none">Playback IA</p>
+                        <p class="text-[10px] opacity-70 uppercase font-bold mt-1">En línea ahora</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="hardware" class="py-16 px-6 md:px-8 max-w-7xl mx-auto overflow-hidden">
-        <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">PERIFÉRICOS</p>
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">Catálogo de Hardware</h2>
-        <div class="flex overflow-x-auto gap-4 md:gap-6 pb-6 hide-scrollbar cursor-grab active:cursor-grabbing snap-x">
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Accesorio</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Cargador Tipo C</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$13.000</p>
-            </div>
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Auriculares</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Sona T Dagger</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$63.000</p>
-            </div>
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Mando</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Joystick PS4</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$28.000</p>
-            </div>
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Accesorio</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Soporte para Auriculares</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$15.000</p>
-            </div>
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Mouse</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Redragon Invader</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$35.500</p>
-            </div>
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Mouse</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Redragon Cobra B/N</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$36.500</p>
-            </div>
-            <div class="snap-start min-w-[260px] md:min-w-[280px] border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors">
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest mb-2 uppercase">Teclado</p>
-                <h4 class="font-bold text-lg mb-8 leading-tight">Kurama Rainbow B/N</h4>
-                <p class="text-2xl font-extrabold text-brandOrange">$63.000</p>
-            </div>
-        </div>
-        <p class="text-[10px] text-gray-400 tracking-widest mt-2"><i class="fas fa-arrows-alt-h mr-1"></i> DESLIZA PARA VER MÁS PRODUCTOS</p>
-    </section>
-
-    <section id="comida" class="py-10 px-6 md:px-8 max-w-7xl mx-auto overflow-hidden">
-        <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">KIOSCO</p>
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">Snacks y Bebidas</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
-            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
-                <h4 class="font-bold text-lg mb-4">Galletas</h4>
-                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$2.300</p>
-            </div>
-            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
-                <h4 class="font-bold text-lg mb-4">Alfajores</h4>
-                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$1.600</p>
-            </div>
-            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
-                <h4 class="font-bold text-lg mb-4">Lata de Gaseosa</h4>
-                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$1.700</p>
-            </div>
-            <div class="border border-gray-200 dark:border-gray-800 p-5 bg-white dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col justify-between">
-                <h4 class="font-bold text-lg mb-4">Saladix</h4>
-                <p class="text-xl md:text-2xl font-extrabold text-brandOrange">$1.000</p>
-            </div>
-        </div>
-    </section>
-
-    <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors pt-16 pb-8 px-6 md:px-8 text-sm mt-10">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
-            <div>
-                <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">UBICACIÓN</h3>
-                <p class="mb-1 font-medium text-gray-800 dark:text-gray-200">25 de Mayo 657</p>
-                <p class="mb-1 text-gray-500 dark:text-gray-400">San Miguel de Tucumán</p>
-                <p class="mb-4 text-gray-500 dark:text-gray-400">Tucumán, Argentina</p>
-                <p class="text-[10px] font-bold text-gray-400 tracking-widest">ZONA CÉNTRICA - ALTO TRÁNSITO</p>
-            </div>
-            <div>
-                <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">HORARIOS</h3>
-                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
-                    <span class="font-bold text-[11px] tracking-widest dark:text-gray-200">LUNES A SÁBADO</span>
-                    <span class="text-brandOrange font-bold text-[11px] tracking-widest">24 HORAS</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="font-bold text-[11px] tracking-widest dark:text-gray-200">DOMINGO</span>
-                    <span class="text-brandOrange font-bold text-[11px] tracking-widest">15:00 A 00:00</span>
+                <div class="flex gap-2">
+                    <button onclick="clearHistory()" class="w-8 h-8 rounded-full hover:bg-black/10 transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
+                    <button onclick="toggleChat()" class="w-8 h-8 rounded-full hover:bg-black/10 transition-colors"><i class="fas fa-times"></i></button>
                 </div>
             </div>
-            <div>
-                <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">CONTACTO</h3>
-                <a href="https://wa.me/5493815074982" target="_blank" class="inline-block bg-brandOrange text-white text-[11px] font-bold tracking-widest py-3 px-6 rounded-full hover:bg-orange-600 transition-colors mb-3">
-                    <i class="fab fa-whatsapp mr-2 text-lg align-middle"></i> WHATSAPP
-                </a>
-                <p class="text-gray-500 dark:text-gray-400 mt-2 font-medium">+54 9 381 507-4982</p>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 hide-scrollbar"></div>
+            <div class="p-4 bg-white/50 dark:bg-black/20 border-t border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-3 bg-gray-100 dark:bg-darkCard rounded-2xl p-2 border border-gray-200 dark:border-gray-700">
+                    <input id="chat-input" type="text" placeholder="Pregúntame..." class="flex-1 bg-transparent border-none text-sm px-2 focus:ring-0 outline-none dark:text-white text-gray-800 font-medium">
+                    <button onclick="sendMessage()" class="bg-brandOrange text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-105 transition-transform"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-100 dark:border-gray-800 text-[9px] font-bold text-gray-400 tracking-widest text-center md:text-left">
-            <p>© 2026 CYBER PLAYBACK GAMING - TODOS LOS DERECHOS RESERVADOS</p>
-            <p class="mt-4 md:mt-0">SAN MIGUEL DE TUCUMÁN, ARGENTINA</p>
-        </div>
-    </footer>
+        <button onclick="toggleChat()" class="w-16 h-16 bg-brandOrange text-white rounded-2xl shadow-2xl flex items-center justify-center text-3xl hover:rotate-12 transition-all"><i class="fas fa-comment-dots"></i></button>
+    </div>
+
+    <audio id="pop-sfx" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" preload="auto"></audio>
+    <audio id="send-sfx" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" preload="auto"></audio>
 
     <script>
-        const pcGrid = document.getElementById('pc-grid');
-        const baseSpecs = [
-            { gpu: '4070', cpu: 'i7-12700K', hz: '165HZ' },
-            { gpu: '3080', cpu: 'i7-12700K', hz: '165HZ' },
-            { gpu: '3070', cpu: 'i5-12400F', hz: '144HZ' },
-            { gpu: '3060', cpu: 'i5-12400F', hz: '144HZ' }
-        ];
-
-        for (let i = 1; i <= 24; i++) {
-            const spec = baseSpecs[(i - 1) % baseSpecs.length];
-            const pcNumber = i.toString().padStart(2, '0');
-            const card = document.createElement('div');
-            card.className = "group border border-gray-200 dark:border-gray-800 p-3 md:p-4 h-24 md:h-28 rounded-2xl relative overflow-hidden transition-all duration-300 hover:bg-brandOrange dark:hover:bg-brandOrange hover:border-brandOrange cursor-pointer bg-white dark:bg-darkCard";
-            card.innerHTML = `
-                <div class="flex items-center space-x-2 mb-2 md:mb-4 group-hover:text-white transition-colors">
-                    <span class="w-2 h-2 rounded-full bg-red-500 group-hover:bg-white shadow-[0_0_8px_rgba(239,68,68,0.8)] group-hover:shadow-none"></span>
-                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider text-gray-600 dark:text-gray-400 group-hover:text-white">PC ${pcNumber}</span>
-                </div>
-                <div class="absolute bottom-3 md:bottom-4 left-3 md:left-4 transition-all duration-300 transform group-hover:-translate-y-4 group-hover:opacity-0">
-                    <p class="font-extrabold text-lg md:text-xl text-gray-900 dark:text-white">${spec.gpu}</p>
-                </div>
-                <div class="absolute bottom-3 md:bottom-4 left-3 md:left-4 opacity-0 transform translate-y-4 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 text-white">
-                    <p class="text-[9px] md:text-[10px] font-medium leading-tight">${spec.cpu}</p>
-                    <p class="text-[9px] md:text-[10px] font-medium leading-tight">RTX ${spec.gpu}</p>
-                    <p class="text-[9px] md:text-[10px] font-medium leading-tight">${spec.hz}</p>
-                </div>
-            `;
-            pcGrid.appendChild(card);
-        }
-
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const htmlElement = document.documentElement;
-
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            htmlElement.classList.add('dark');
-            themeIcon.classList.replace('fa-moon', 'fa-sun');
-        }
-
-        themeToggleBtn.addEventListener('click', () => {
-            htmlElement.classList.toggle('dark');
-            if (htmlElement.classList.contains('dark')) {
-                localStorage.setItem('theme', 'dark');
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-                themeIcon.classList.add('text-yellow-400');
-            } else {
-                localStorage.setItem('theme', 'light');
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-                themeIcon.classList.remove('text-yellow-400');
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('pc-grid');
+            const specs = [{g:'4070', c:'i7-12k', h:'165hz'}, {g:'3080', c:'i7-12k', h:'165hz'}, {g:'3060', c:'i5-12k', h:'144hz'}];
+            for(let i=1; i<=24; i++) {
+                const s = specs[i % 3];
+                // CAMBIO: bg-gray-100 para modo claro
+                grid.innerHTML += `
+                    <div class="group border border-gray-200 dark:border-gray-800 p-4 rounded-3xl bg-gray-100 dark:bg-darkCard hover:bg-brandOrange transition-all cursor-pointer relative overflow-hidden">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-2 h-2 rounded-full bg-green-500 group-hover:bg-white animate-pulse"></span>
+                            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-white uppercase">PC ${i.toString().padStart(2,'0')}</span>
+                        </div>
+                        <p class="font-black text-xl text-gray-900 dark:text-white group-hover:text-white transition-colors">RTX ${s.g}</p>
+                        <p class="text-[9px] font-bold text-gray-500 group-hover:text-white/80 uppercase mt-1">${s.c} | ${s.h}</p>
+                    </div>`;
             }
+            const themeBtn = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const updateTheme = (isDark) => {
+                document.documentElement.classList.toggle('dark', isDark);
+                themeIcon.className = isDark ? 'fas fa-sun text-lg' : 'fas fa-moon text-lg';
+            };
+            themeBtn.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateTheme(isDark);
+            });
+            if(localStorage.getItem('theme') === 'dark') updateTheme(true);
+            renderHistory();
         });
+
+        const playSfx = (id) => { const a = document.getElementById(id); a.volume = 0.15; a.currentTime = 0; a.play(); };
+
+        let chatHistory = JSON.parse(localStorage.getItem('cyber_v1_chat')) || [{ text: "¡Hola! Soy la IA de CyberPlayBack. ¿En qué puedo ayudarte?", sender: 'ai' }];
+
+        function toggleChat() { 
+            const win = document.getElementById('chat-window');
+            win.classList.toggle('active');
+            if(win.classList.contains('active')) playSfx('pop-sfx');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = chatHistory.map(m => `
+                <div class="flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}">
+                    <div class="${m.sender === 'user' ? 'bg-brandOrange text-white' : 'bg-gray-100 dark:bg-darkCard text-gray-800 dark:text-gray-200'} p-4 rounded-3xl ${m.sender === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm text-sm max-w-[85%] font-medium">
+                        ${m.text}
+                    </div>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            input.value = "";
+            chatHistory.push({ text: text, sender: 'user' });
+            renderHistory();
+            playSfx('send-sfx');
+            setTimeout(() => {
+                let response = "Consultanos por WhatsApp o vení al local en 25 de Mayo 657.";
+                const low = text.toLowerCase();
+                if(low.includes("precio")) response = "La hora sale $2.300, pero la Promo Trasnoche de $9.000 es la mejor.";
+                if(low.includes("pc")) response = "Tenemos RTX 4070, 3080 y 3060 con monitores de 165Hz.";
+                chatHistory.push({ text: response, sender: 'ai' });
+                localStorage.setItem('cyber_v1_chat', JSON.stringify(chatHistory));
+                renderHistory();
+                playSfx('pop-sfx');
+            }, 800);
+        }
+
+        function clearHistory() { chatHistory = [{ text: "Chat limpio. ¿Qué duda tenés?", sender: 'ai' }]; localStorage.setItem('cyber_v1_chat', JSON.stringify(chatHistory)); renderHistory(); }
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+
+        let installEvent;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvent = e; document.getElementById('pwa-banner').classList.remove('hidden'); });
+        document.getElementById('pwa-install').addEventListener('click', async () => { if(installEvent) { installEvent.prompt(); } });
     </script>
 </body>
 </html>
