@@ -32,14 +32,6 @@
         .dark .hide-scrollbar::-webkit-scrollbar-track { background: #333; }
         .hide-scrollbar::-webkit-scrollbar-thumb { background: #ff5500; border-radius: 10px; }
         
-        /* Animación para el botón de instalar */
-        @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(255, 85, 0, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 85, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 85, 0, 0); }
-        }
-        .install-btn-anim { animation: pulse-orange 2s infinite; }
-
         /* Animación y estilos para el slider de opiniones */
         @keyframes slide {
             0% { transform: translateX(0); }
@@ -63,11 +55,16 @@
             mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
             -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
+
+        /* Estilos de scrollbar para el chat */
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .chat-scroll::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
 <body class="antialiased font-sans bg-[#fcfcfc] text-[#111] dark:bg-darkBg dark:text-gray-100">
 
-    <audio id="click-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
+    <audio id="click-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
 
     <nav class="flex justify-between items-center px-6 md:px-8 py-5 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors sticky top-0 z-50">
         <div class="font-bold text-lg tracking-wide">CyberPlayBack</div>
@@ -78,10 +75,6 @@
             <a href="#opiniones" class="hover:text-brandOrange transition-colors">OPINIONES</a>
         </div>
         <div class="flex items-center gap-3">
-            <button id="install-button" class="hidden sm:flex items-center gap-2 bg-brandOrange text-white text-[10px] font-bold py-2 px-4 rounded-full install-btn-anim">
-                <i class="fas fa-download"></i> INSTALAR APP
-            </button>
-            
             <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                 <i class="fas fa-moon text-lg" id="theme-icon"></i>
             </button>
@@ -227,6 +220,7 @@
         <div class="max-w-7xl mx-auto px-6 md:px-8 mb-8">
             <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">RESEÑAS</p>
             <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Opiniones de nuestros Clientes</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2"><i class="fas fa-hand-pointer mr-1"></i> Toca una reseña para leerla completa</p>
         </div>
         
         <div class="relative w-full overflow-hidden mask-edges py-2">
@@ -266,21 +260,64 @@
         </div>
     </footer>
 
-    <div class="fixed bottom-6 right-6 z-[100]">
-        <button class="bg-brandOrange text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl hover:scale-110 transition-transform">
-            <i class="fas fa-comment-dots"></i>
+    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+        
+        <div id="chat-window" class="hidden w-[90vw] sm:w-80 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-4 overflow-hidden flex-col transition-all duration-300 transform origin-bottom-right scale-0 opacity-0">
+            <div class="bg-brandOrange p-4 flex items-center justify-between text-white">
+                <div class="flex items-center gap-3">
+                    <img src="1000311753.png" alt="Cyber Logo" class="w-10 h-10 rounded-full object-cover bg-white border-2 border-white/30 shadow-sm">
+                    <div>
+                        <span class="font-bold block leading-tight">Soporte Cyber</span>
+                        <span class="text-[10px] text-white/80 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> En línea
+                        </span>
+                    </div>
+                </div>
+                <button id="close-chat" class="hover:text-gray-200 text-xl w-8 h-8 flex justify-center items-center rounded-full hover:bg-white/10 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chat-messages" class="h-64 p-4 overflow-y-auto bg-gray-50 dark:bg-darkBg flex flex-col gap-3 text-sm chat-scroll">
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-xl rounded-tl-none self-start max-w-[85%] text-gray-800 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-600">
+                    ¡Hola! Bienvenido a CyberPlayBack 🎮. ¿En qué te podemos ayudar hoy?
+                </div>
+            </div>
+            <div class="p-3 bg-white dark:bg-darkCard border-t border-gray-200 dark:border-gray-700 flex gap-2 items-center">
+                <input type="text" id="chat-input" placeholder="Escribe tu consulta..." class="flex-grow bg-gray-100 dark:bg-darkBg rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brandOrange text-gray-800 dark:text-white transition-shadow">
+                <button id="send-msg" class="bg-brandOrange text-white min-w-[36px] w-9 h-9 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors shadow-sm">
+                    <i class="fas fa-paper-plane text-xs relative right-[1px]"></i>
+                </button>
+            </div>
+        </div>
+
+        <button id="toggle-chat" class="bg-white dark:bg-darkCard w-16 h-16 rounded-full shadow-[0_0_20px_rgba(255,85,0,0.3)] flex items-center justify-center hover:scale-105 transition-transform border-2 border-brandOrange overflow-hidden z-50">
+            <img src="1000311753.png" alt="ChatBot" class="w-full h-full object-cover">
         </button>
     </div>
 
+    <div id="review-modal" class="hidden fixed inset-0 z-[120] bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkCard rounded-3xl p-6 md:p-8 max-w-lg w-full relative transform scale-95 transition-transform duration-300 shadow-2xl border border-gray-200 dark:border-gray-700" id="review-modal-content">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-brandOrange dark:hover:text-brandOrange transition-colors w-8 h-8 flex justify-center items-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div id="modal-stars" class="flex gap-1 text-base"></div>
+            </div>
+            <h3 id="modal-name" class="font-bold text-xl md:text-2xl mb-4 dark:text-white"></h3>
+            <p id="modal-text" class="text-gray-600 dark:text-gray-300 text-base md:text-lg leading-relaxed italic"></p>
+        </div>
+    </div>
+
     <script>
-        // SONIDOS AL HACER CLICK
+        // --- SONIDOS AL HACER CLICK (Modificados a 20% de volumen para mayor suavidad) ---
         const clickSound = document.getElementById('click-sound');
+        clickSound.volume = 0.2; 
         document.addEventListener('click', () => {
             clickSound.currentTime = 0;
             clickSound.play().catch(()=>{}); 
         });
 
-        // GENERACIÓN DE PCs (LÓGICA ORIGINAL)
+        // --- GENERACIÓN DE PCs ---
         const pcGrid = document.getElementById('pc-grid');
         const baseSpecs = [
             { gpu: '4070', cpu: 'i7-12700K', hz: '165HZ' },
@@ -310,7 +347,7 @@
             pcGrid.appendChild(card);
         }
 
-        // --- NUEVA LÓGICA DE OPINIONES ---
+        // --- LÓGICA DE OPINIONES AMPLIABLES ---
         const reviews = [
             { name: "Su maldonado", stars: 5, color: "text-yellow-400", text: "Quiero destacar la atencion de la mujercita que esta de tarde. Me sorprendió la delicadeza y respeto con la que atiende, tuve la posibilidad de llegarme esta semana y quedarme adentro a esperar y estoy agradecida que siempre a mis hijos les tuvo paciencia y es la razon por la cual mis hijos eligen seguir yendo! Hoy en dia van con 8/10 amigos. Me gustaria hacerle un presente y saber si domingos abren y esta ella. Exitos!!" },
             { name: "Juanchi", stars: 5, color: "text-yellow-400", text: "Excelente atencion y tremenda limpieza del local. Muy buenas pc genios (que alguien me diga si la chica que atiende de tarde tiene novio y si es +18) 😂😂🫶🏽" },
@@ -323,12 +360,10 @@
         ];
 
         const reviewsTrack = document.getElementById('reviews-track');
-        // Duplicamos el array para lograr el efecto visual de "scroll infinito" sin cortes
         const infiniteReviews = [...reviews, ...reviews];
 
         infiniteReviews.forEach(review => {
             let starsHtml = '';
-            // Generador de estrellas
             for(let i = 1; i <= 5; i++) {
                 if(i <= review.stars) {
                     starsHtml += `<i class="fas fa-star ${review.color}"></i>`;
@@ -338,7 +373,9 @@
             }
 
             const card = document.createElement('div');
-            card.className = "review-card border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col gap-3 shadow-sm";
+            // Agregamos cursor-pointer para que se entienda que es clickeable
+            card.className = "review-card border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col gap-3 shadow-sm cursor-pointer";
+            card.onclick = () => openReviewModal(review);
             card.innerHTML = `
                 <div class="flex justify-between items-start">
                     <h4 class="font-bold text-lg leading-tight dark:text-white pr-2">${review.name}</h4>
@@ -346,13 +383,111 @@
                         ${starsHtml}
                     </div>
                 </div>
-                <p class="text-sm text-gray-600 dark:text-gray-300 italic flex-grow">"${review.text}"</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 italic flex-grow line-clamp-4">"${review.text}"</p>
+                <div class="text-[10px] text-brandOrange font-bold tracking-widest mt-2 uppercase">Leer completa</div>
             `;
             reviewsTrack.appendChild(card);
         });
-        // --- FIN LÓGICA OPINIONES ---
 
-        // TEMA OSCURO (LÓGICA ORIGINAL)
+        // Funciones del Modal de Reseñas
+        const reviewModal = document.getElementById('review-modal');
+        const modalContent = document.getElementById('review-modal-content');
+        const closeReviewBtn = document.getElementById('close-modal');
+        
+        function openReviewModal(review) {
+            document.getElementById('modal-name').textContent = review.name;
+            document.getElementById('modal-text').textContent = `"${review.text}"`;
+            
+            let starsHtml = '';
+            for(let i = 1; i <= 5; i++) {
+                if(i <= review.stars) {
+                    starsHtml += `<i class="fas fa-star ${review.color}"></i>`;
+                } else {
+                    starsHtml += `<i class="fas fa-star text-gray-300 dark:text-gray-600"></i>`;
+                }
+            }
+            document.getElementById('modal-stars').innerHTML = starsHtml;
+
+            reviewModal.classList.remove('hidden');
+            setTimeout(() => {
+                reviewModal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeReviewModal() {
+            reviewModal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                reviewModal.classList.add('hidden');
+            }, 300);
+        }
+
+        closeReviewBtn.addEventListener('click', closeReviewModal);
+        reviewModal.addEventListener('click', (e) => {
+            if(e.target === reviewModal) closeReviewModal();
+        });
+
+
+        // --- LÓGICA DEL CHATBOT ---
+        const toggleChatBtn = document.getElementById('toggle-chat');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChatBtn = document.getElementById('close-chat');
+        const chatInput = document.getElementById('chat-input');
+        const sendMsgBtn = document.getElementById('send-msg');
+        const chatMessages = document.getElementById('chat-messages');
+
+        function toggleChat() {
+            if(chatWindow.classList.contains('hidden')){
+                chatWindow.classList.remove('hidden');
+                setTimeout(() => {
+                    chatWindow.classList.remove('scale-0', 'opacity-0');
+                    chatWindow.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } else {
+                chatWindow.classList.remove('scale-100', 'opacity-100');
+                chatWindow.classList.add('scale-0', 'opacity-0');
+                setTimeout(() => {
+                    chatWindow.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        toggleChatBtn.addEventListener('click', toggleChat);
+        closeChatBtn.addEventListener('click', toggleChat);
+
+        function addMessage(text, isUser = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = isUser 
+                ? "bg-brandOrange text-white p-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm"
+                : "bg-white dark:bg-gray-700 p-3 rounded-xl rounded-tl-none self-start max-w-[85%] text-gray-800 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-600";
+            msgDiv.textContent = text;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleSend() {
+            const text = chatInput.value.trim();
+            if(!text) return;
+            
+            addMessage(text, true); // Mensaje del usuario
+            chatInput.value = '';
+            
+            // Simulación de respuesta automática
+            setTimeout(() => {
+                addMessage("¡Gracias por escribirnos! Un administrador del staff de CyberPlayBack te responderá a la brevedad. 🎮🔥");
+            }, 1000);
+        }
+
+        sendMsgBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') handleSend();
+        });
+
+
+        // --- TEMA OSCURO ---
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const htmlElement = document.documentElement;
@@ -360,6 +495,7 @@
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             htmlElement.classList.add('dark');
             themeIcon.classList.replace('fa-moon', 'fa-sun');
+            themeIcon.classList.add('text-yellow-400');
         }
 
         themeToggleBtn.addEventListener('click', () => {
@@ -375,26 +511,6 @@
             }
         });
 
-        // LÓGICA DE INSTALACIÓN (PWA)
-        let deferredPrompt;
-        const installBtn = document.getElementById('install-button');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.classList.remove('hidden');
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installBtn.classList.add('hidden');
-                }
-                deferredPrompt = null;
-            }
-        });
     </script>
 </body>
 </html>
