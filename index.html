@@ -39,6 +39,30 @@
             100% { box-shadow: 0 0 0 0 rgba(255, 85, 0, 0); }
         }
         .install-btn-anim { animation: pulse-orange 2s infinite; }
+
+        /* Animación y estilos para el slider de opiniones */
+        @keyframes slide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } 
+        }
+        .carousel-track {
+            display: flex;
+            width: max-content;
+            animation: slide 50s linear infinite;
+        }
+        .carousel-track:hover {
+            animation-play-state: paused;
+        }
+        .review-card {
+            width: 340px;
+            flex-shrink: 0;
+            white-space: normal;
+        }
+        /* Máscara para hacer que los bordes del slider se desvanezcan suavemente */
+        .mask-edges {
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
     </style>
 </head>
 <body class="antialiased font-sans bg-[#fcfcfc] text-[#111] dark:bg-darkBg dark:text-gray-100">
@@ -51,8 +75,12 @@
             <a href="#tarifas" class="hover:text-brandOrange transition-colors">TARIFAS</a>
             <a href="#hardware" class="hover:text-brandOrange transition-colors">PRODUCTOS</a>
             <a href="#comida" class="hover:text-brandOrange transition-colors">KIOSCO</a>
+            <a href="#opiniones" class="hover:text-brandOrange transition-colors">OPINIONES</a>
         </div>
         <div class="flex items-center gap-3">
+            <button id="install-button" class="hidden sm:flex items-center gap-2 bg-brandOrange text-white text-[10px] font-bold py-2 px-4 rounded-full install-btn-anim">
+                <i class="fas fa-download"></i> INSTALAR APP
+            </button>
             
             <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                 <i class="fas fa-moon text-lg" id="theme-icon"></i>
@@ -78,12 +106,12 @@
     <section class="py-12 md:py-16 px-6 md:px-8 max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 md:mb-10 gap-4">
             <div>
-                <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">PCs</p>
+                <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">ESTADO EN TIEMPO REAL</p>
                 <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Mapa de PCs</h2>
             </div>
             <div class="sm:text-right">
                 <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-1">DISPONIBLES</p>
-                <p class="text-2xl md:text-3xl font-extrabold text-brandOrange">21/24</p>
+                <p class="text-2xl md:text-3xl font-extrabold text-brandOrange">15/24</p>
             </div>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4" id="pc-grid"></div>
@@ -195,7 +223,19 @@
         </div>
     </section>
 
-    <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors pt-16 pb-8 px-6 md:px-8 text-sm mt-10">
+    <section id="opiniones" class="py-16 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 md:px-8 mb-8">
+            <p class="text-[11px] font-bold text-gray-500 tracking-widest mb-2">RESEÑAS</p>
+            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Opiniones de nuestros Clientes</h2>
+        </div>
+        
+        <div class="relative w-full overflow-hidden mask-edges py-2">
+            <div class="carousel-track gap-4 md:gap-6 pr-4 md:pr-6" id="reviews-track">
+                </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-darkSection transition-colors pt-16 pb-8 px-6 md:px-8 text-sm mt-4">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
             <div>
                 <h3 class="font-bold text-[11px] text-gray-500 dark:text-gray-400 tracking-widest mb-4">UBICACIÓN</h3>
@@ -237,7 +277,7 @@
         const clickSound = document.getElementById('click-sound');
         document.addEventListener('click', () => {
             clickSound.currentTime = 0;
-            clickSound.play().catch(()=>{}); // Catch para navegadores que bloquean autoplay
+            clickSound.play().catch(()=>{}); 
         });
 
         // GENERACIÓN DE PCs (LÓGICA ORIGINAL)
@@ -269,6 +309,48 @@
                 </div>`;
             pcGrid.appendChild(card);
         }
+
+        // --- NUEVA LÓGICA DE OPINIONES ---
+        const reviews = [
+            { name: "Su maldonado", stars: 5, color: "text-yellow-400", text: "Quiero destacar la atencion de la mujercita que esta de tarde. Me sorprendió la delicadeza y respeto con la que atiende, tuve la posibilidad de llegarme esta semana y quedarme adentro a esperar y estoy agradecida que siempre a mis hijos les tuvo paciencia y es la razon por la cual mis hijos eligen seguir yendo! Hoy en dia van con 8/10 amigos. Me gustaria hacerle un presente y saber si domingos abren y esta ella. Exitos!!" },
+            { name: "Juanchi", stars: 5, color: "text-yellow-400", text: "Excelente atencion y tremenda limpieza del local. Muy buenas pc genios (que alguien me diga si la chica que atiende de tarde tiene novio y si es +18) 😂😂🫶🏽" },
+            { name: "Antonio", stars: 5, color: "text-yellow-400", text: "Hermoso lugar para pasar la tarde jugando con tus amigos!!" },
+            { name: "Felipe Luna", stars: 5, color: "text-yellow-400", text: "muy buena experiencia!!!! la primera vez que fui a un cyber, totalmente recomendable para venir a pasar el rato con amigos. me gustó el detalle de que en el fondo haya un señor con un guante de latex viendo el hentai más gráfico que hay en internet y hable a través de un adult chat. Lo único que me resultó desagradable fue que el señor le haya acabado en el brazo a un amigo que se sentó a su lado. las máquinas y los periféricos funcionaban muy bien y el ambiente es muy tranquilo 😋😋😋" },
+            { name: "A. Stark", stars: 4, color: "text-yellow-500", text: "Me encanto el lugar, buen ambiente, hermosas computadoras, buen Internet Internet velocidad con la que opera, pero le doy cuatro ya que hubo problemas para registrarme en steam para poder jugar algunos juegos, y en otros no podían entrar directamente, y bueno, si tuviera un poco más de variedad en el mínimo kiosco perfecto, lo demás de 10" },
+            { name: "ale jan drito", stars: 3, color: "text-orange-400", text: "fui anoche y lo sucio que tienen el lugar es decepcionante. Fui muchas beces a la tarde cuando estaba la chica atendiendo y siempre impecable da gusto quedarse asi, consejo ! copien un poco esa accion los muchachos de los siguientes turnos xq el olor te da ganas de irte" },
+            { name: "Eze Quiel", stars: 3, color: "text-orange-400", text: "Que mala atencion manejan en el turno noche, pésima amigo. Mala experiencia Ni un problema nos quiso solucionar y muy mala onda. 3 estrellas solo por Nautistaa y la chica de la siesta 😞" },
+            { name: "Ignacio Pro", stars: 1, color: "text-red-500", text: "El domingo tuve una mala experiencia con el vaguito nuevo de la tarde entendi k era domingo y no tenia ganas de trabajar y le di una oportunidad al trasnoche de hace rato y parece k para trabajar ponen de condicion tener mala voluntad , no volvere" }
+        ];
+
+        const reviewsTrack = document.getElementById('reviews-track');
+        // Duplicamos el array para lograr el efecto visual de "scroll infinito" sin cortes
+        const infiniteReviews = [...reviews, ...reviews];
+
+        infiniteReviews.forEach(review => {
+            let starsHtml = '';
+            // Generador de estrellas
+            for(let i = 1; i <= 5; i++) {
+                if(i <= review.stars) {
+                    starsHtml += `<i class="fas fa-star ${review.color}"></i>`;
+                } else {
+                    starsHtml += `<i class="fas fa-star text-gray-300 dark:text-gray-600"></i>`;
+                }
+            }
+
+            const card = document.createElement('div');
+            card.className = "review-card border border-gray-200 dark:border-gray-800 p-6 bg-gray-100 dark:bg-darkCard rounded-2xl hover:border-brandOrange transition-colors flex flex-col gap-3 shadow-sm";
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <h4 class="font-bold text-lg leading-tight dark:text-white pr-2">${review.name}</h4>
+                    <div class="text-[12px] flex gap-1 pt-1">
+                        ${starsHtml}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-300 italic flex-grow">"${review.text}"</p>
+            `;
+            reviewsTrack.appendChild(card);
+        });
+        // --- FIN LÓGICA OPINIONES ---
 
         // TEMA OSCURO (LÓGICA ORIGINAL)
         const themeToggleBtn = document.getElementById('theme-toggle');
