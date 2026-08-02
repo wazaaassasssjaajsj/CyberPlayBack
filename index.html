@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Los Elegidos de Epstein</title>
-<meta name="description" content="Los Elegidos de Epstein — un foro premium para publicar, reaccionar y conversar en tiempo real." />
+<title>Los Elegidos de Epatein</title>
+<meta name="description" content="Los Elegidos de Epstein" />
 <meta name="theme-color" content="#0b0c10" />
 
 <!--
@@ -54,10 +54,10 @@
   --text-faint:      #6b7080;
 
   /* acentos — personalizables desde Configuración */
-  --accent:          #f2760a; /* naranja — "los elegidos" */
-  --accent-ink:      #241000;
-  --accent-2:        #7c5cff; /* violeta — aurora / realce */
-  --accent-3:        #34d399; /* teal — éxito */
+  --accent:          #0ea5e9; /* azul océano — "los elegidos" */
+  --accent-ink:      #01202e;
+  --accent-2:        #2563eb; /* azul profundo — aurora / realce */
+  --accent-3:        #14b8a6; /* verde-azulado — espuma de mar / éxito */
   --danger:          #ef5b5b;
 
   /* tipografía */
@@ -96,7 +96,7 @@
   --text:          #17181d;
   --text-dim:      #565a66;
   --text-faint:    #8a8e99;
-  --accent-ink:    #201400;
+  --accent-ink:    #01202e;
 }
 
 *,*::before,*::after{ box-sizing:border-box; }
@@ -939,7 +939,7 @@ async function updatePostRemote(id, patch){
 const LS_KEYS = { posts:"lec_posts", session:"lec_session", users:"lec_users", theme:"lec_theme", accent:"lec_accent", settings:"lec_settings" };
 
 const DEFAULT_TAGS = [
-  { name:"Historias", color:"#f2760a" },
+  { name:"Historias", color:"#38bdf8" },
   { name:"Arte",       color:"#7c5cff" },
   { name:"Preguntas",  color:"#34d399" },
   { name:"Memes",      color:"#ef5b5b" },
@@ -967,7 +967,7 @@ const state = {
   currentUser: loadJSON(LS_KEYS.session, null), // {username, name, avatarSeed} o null si no hay sesión
   settings: loadJSON(LS_KEYS.settings, { bg:true, cursor:true }),
   theme: localStorage.getItem(LS_KEYS.theme) || "dark",
-  accent: localStorage.getItem(LS_KEYS.accent) || "#f2760a",
+  accent: localStorage.getItem(LS_KEYS.accent) || "#0ea5e9",
   activeFeed: "inicio",
   activeSort: "recientes",
   activeTag: null,
@@ -992,9 +992,80 @@ function persistSettings(){ saveJSON(LS_KEYS.settings, state.settings); }
    quedan guardados solo en localStorage de ESTE navegador — funcional
    para probar, pero no se comparte con otros dispositivos.
    ===================================================================== */
+/* sha256Hex(): usa la Web Crypto API cuando está disponible (contextos
+   https/localhost), y cae a una implementación SHA-256 pura en JS cuando
+   no lo está (por ejemplo, si el archivo se abre directamente con
+   doble clic como file://, donde crypto.subtle no existe). Así el
+   registro y el login funcionan siempre, se suba o no a un servidor. */
 async function sha256Hex(text){
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  if(window.crypto && window.crypto.subtle && window.isSecureContext){
+    try{
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    }catch(e){ /* seguimos con el fallback de abajo */ }
+  }
+  return sha256Fallback(text);
+}
+/* Implementación SHA-256 pura en JavaScript (algoritmo estándar, sin
+   dependencias externas) usada como respaldo. */
+function sha256Fallback(str){
+  function rightRotate(v,a){ return (v>>>a) | (v<<(32-a)); }
+  const maxWord = Math.pow(2,32);
+  let i,j,result="";
+  const words=[];
+  const utf8 = unescape(encodeURIComponent(str)); // normaliza a bytes UTF-8
+  const asciiBitLength = utf8.length*8;
+  let hash = sha256Fallback.h = sha256Fallback.h || [];
+  let k = sha256Fallback.k = sha256Fallback.k || [];
+  let primeCounter = k.length;
+  const isComposite = {};
+  for(let candidate=2; primeCounter<64; candidate++){
+    if(!isComposite[candidate]){
+      for(i=0;i<313;i+=candidate) isComposite[i]=candidate;
+      hash[primeCounter]=(Math.pow(candidate,.5)*maxWord)|0;
+      k[primeCounter++]=(Math.pow(candidate,1/3)*maxWord)|0;
+    }
+  }
+  hash = hash.slice(0,8);
+  let s = utf8 + "\x80";
+  while(s.length%64-56) s += "\x00";
+  for(i=0;i<s.length;i++){
+    j = s.charCodeAt(i);
+    words[i>>2] |= j << ((3-i)%4)*8;
+  }
+  words[words.length] = ((asciiBitLength/maxWord)|0);
+  words[words.length] = (asciiBitLength);
+  for(j=0;j<words.length;){
+    const w = words.slice(j, j+=16);
+    const oldHash = hash;
+    hash = hash.slice(0,8);
+    for(i=0;i<64;i++){
+      const w15=w[i-15], w2=w[i-2];
+      const a=hash[0], e=hash[4];
+      const temp1 = hash[7]
+        + (rightRotate(e,6)^rightRotate(e,11)^rightRotate(e,25))
+        + ((e&hash[5])^((~e)&hash[6]))
+        + k[i]
+        + (w[i] = (i<16)?w[i]:(
+            w[i-16]
+            + (rightRotate(w15,7)^rightRotate(w15,18)^(w15>>>3))
+            + w[i-7]
+            + (rightRotate(w2,17)^rightRotate(w2,19)^(w2>>>10))
+          )|0);
+      const temp2 = (rightRotate(a,2)^rightRotate(a,13)^rightRotate(a,22))
+        + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash = [(temp1+temp2)|0].concat(hash);
+      hash[4] = (hash[4]+temp1)|0;
+    }
+    for(i=0;i<8;i++) hash[i] = (hash[i]+oldHash[i])|0;
+  }
+  for(i=0;i<8;i++){
+    for(j=3;j+1;j--){
+      const b = (hash[i]>>(j*8))&255;
+      result += ((b<16)?"0":"")+b.toString(16);
+    }
+  }
+  return result;
 }
 function randomSalt(){ return uid()+uid(); }
 
@@ -1003,16 +1074,25 @@ function setLocalUsers(list){ saveJSON(LS_KEYS.users, list); }
 
 async function findUserRecord(username){
   if(FIREBASE_ENABLED && db){
-    const snap = await fsApi.getDoc(fsApi.doc(db, "users", username));
-    return snap.exists() ? snap.data() : null;
+    try{
+      const snap = await fsApi.getDoc(fsApi.doc(db, "users", username));
+      return snap.exists() ? snap.data() : null;
+    }catch(err){
+      console.warn("Firestore no respondió al buscar el usuario, se usa el navegador como respaldo:", err);
+    }
   }
   return getLocalUsers().find(u=>u.username===username) || null;
 }
 
 async function saveUserRecord(record){
   if(FIREBASE_ENABLED && db){
-    await fsApi.setDoc(fsApi.doc(db, "users", record.username), record);
-    return;
+    try{
+      await fsApi.setDoc(fsApi.doc(db, "users", record.username), record);
+      return;
+    }catch(err){
+      console.warn("Firestore no respondió al guardar el usuario, se guarda en este navegador:", err);
+      toast("No se pudo guardar en Firebase (revisá las reglas de Firestore). Se guardó en este navegador.", "warn");
+    }
   }
   const users = getLocalUsers();
   const idx = users.findIndex(u=>u.username===record.username);
@@ -1021,28 +1101,39 @@ async function saveUserRecord(record){
 }
 
 async function registerUser(name, username, password){
-  username = (username||"").trim().toLowerCase().replace(/\s+/g,"");
-  name = (name||"").trim();
-  if(!username || !password || !name){ toast("Completá todos los campos", "error"); return; }
-  if(password.length < 4){ toast("La contraseña debe tener al menos 4 caracteres", "error"); return; }
-  const existing = await findUserRecord(username);
-  if(existing){ toast("Ese nombre de usuario ya existe", "error"); return; }
-  const salt = randomSalt();
-  const hash = await sha256Hex(password + salt);
-  const avatarSeed = uid();
-  await saveUserRecord({ username, name, salt, hash, avatarSeed, createdAt: Date.now() });
-  applySession({ username, name, avatarSeed });
-  toast(`¡Cuenta creada! Bienvenido, ${name}`, "success");
+  try{
+    username = (username||"").trim().toLowerCase().replace(/\s+/g,"");
+    name = (name||"").trim();
+    if(!username || !password || !name){ toast("Completá todos los campos", "error"); return; }
+    if(password.length < 4){ toast("La contraseña debe tener al menos 4 caracteres", "error"); return; }
+    const existing = await findUserRecord(username);
+    if(existing){ toast("Ese nombre de usuario ya existe", "error"); return; }
+    const salt = randomSalt();
+    const hash = await sha256Hex(password + salt);
+    const avatarSeed = uid();
+    await saveUserRecord({ username, name, salt, hash, avatarSeed, createdAt: Date.now() });
+    applySession({ username, name, avatarSeed });
+    toast(`¡Cuenta creada! Bienvenido, ${name}`, "success");
+  }catch(err){
+    console.error("Error al crear la cuenta:", err);
+    toast("No se pudo crear la cuenta. Revisá la consola (F12) para más detalles.", "error");
+  }
 }
 
 async function loginUser(username, password){
-  username = (username||"").trim().toLowerCase().replace(/\s+/g,"");
-  const record = await findUserRecord(username);
-  if(!record){ toast("No existe ese usuario", "error"); return; }
-  const hash = await sha256Hex(password + record.salt);
-  if(hash !== record.hash){ toast("Contraseña incorrecta", "error"); return; }
-  applySession({ username: record.username, name: record.name, avatarSeed: record.avatarSeed });
-  toast(`¡Bienvenido de nuevo, ${record.name}!`, "success");
+  try{
+    username = (username||"").trim().toLowerCase().replace(/\s+/g,"");
+    if(!username || !password){ toast("Completá usuario y contraseña", "error"); return; }
+    const record = await findUserRecord(username);
+    if(!record){ toast("No existe ese usuario", "error"); return; }
+    const hash = await sha256Hex(password + record.salt);
+    if(hash !== record.hash){ toast("Contraseña incorrecta", "error"); return; }
+    applySession({ username: record.username, name: record.name, avatarSeed: record.avatarSeed });
+    toast(`¡Bienvenido de nuevo, ${record.name}!`, "success");
+  }catch(err){
+    console.error("Error al iniciar sesión:", err);
+    toast("No se pudo iniciar sesión. Revisá la consola (F12) para más detalles.", "error");
+  }
 }
 
 function applySession(sessionUser){
@@ -1312,6 +1403,10 @@ function postHTML(p){
         Guardar
       </div>
       <div class="action-btn spacer"></div>
+      ${(state.currentUser && p.authorUsername===state.currentUser.username) ? `
+      <div class="action-btn" data-delete="${p.id}" title="Eliminar publicación" style="color:var(--danger);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z"/></svg>
+      </div>` : ``}
       <div class="action-btn" data-report="${p.id}" title="Denunciar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
       </div>
@@ -1376,6 +1471,27 @@ function renderFeed(){
    EVENTOS DE PUBLICACIONES (delegación simple tras cada render)
    ===================================================================== */
 function findPost(id){ return state.posts.find(p=>p.id===id); }
+
+/* Elimina una publicación. Solo el autor puede borrar la suya. */
+async function deletePost(postId){
+  const post = findPost(postId);
+  if(!post) return;
+  if(!state.currentUser || post.authorUsername !== state.currentUser.username){
+    toast("Solo podés eliminar tus propias publicaciones", "error");
+    return;
+  }
+  if(!confirm("¿Eliminar esta publicación? No se puede deshacer.")) return;
+
+  state.posts = state.posts.filter(p=>p.id!==postId);
+  persistPosts();
+  renderFeed(); renderTagList();
+  toast("Publicación eliminada", "info");
+
+  if(FIREBASE_ENABLED && db){
+    try{ await fsApi.deleteDoc(fsApi.doc(db, "posts", postId)); }
+    catch(err){ console.warn("No se pudo eliminar la publicación en Firestore:", err); }
+  }
+}
 
 function bindPostEvents(){
   // Reacciones
@@ -1450,6 +1566,11 @@ function bindPostEvents(){
   // Denunciar
   document.querySelectorAll("[data-report]").forEach(btn=>{
     btn.addEventListener("click", ()=> toast("Gracias, revisaremos esta publicación", "warn"));
+  });
+
+  // Eliminar (solo visible para el propio autor)
+  document.querySelectorAll("[data-delete]").forEach(btn=>{
+    btn.addEventListener("click", ()=> deletePost(btn.dataset.delete));
   });
 
   // Toggle comentarios
@@ -1731,7 +1852,7 @@ document.addEventListener("click", (e)=>{ if(!e.target.closest("#notifPanel") &&
 /* =====================================================================
    TEMA CLARO/OSCURO + ACENTO + AJUSTES
    ===================================================================== */
-const ACCENTS = ["#f2760a","#ff9142","#e8b34a","#7c5cff","#34d399","#ef5b5b"];
+const ACCENTS = ["#0ea5e9","#2563eb","#14b8a6","#0891b2","#38bdf8","#1d4ed8"];
 function applyTheme(){
   document.documentElement.classList.toggle("light", state.theme==="light");
   document.getElementById("themeIcon").innerHTML = state.theme==="light"
@@ -1947,7 +2068,7 @@ window.addEventListener("scroll", ()=>{
   }
   function tick(){
     ctx.clearRect(0,0,w,h);
-    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#f2760a";
+    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#0ea5e9";
     ctx.fillStyle = accent;
     parts.forEach(p=>{
       p.x += p.vx; p.y += p.vy;
@@ -1980,7 +2101,7 @@ window.addEventListener("scroll", ()=>{
     const ctx = c.getContext("2d");
     ctx.fillStyle = "#0b0c10"; ctx.fillRect(0,0,size,size);
     const grad = ctx.createLinearGradient(0,0,size,size);
-    grad.addColorStop(0,"#f2760a"); grad.addColorStop(1,"#7c5cff");
+    grad.addColorStop(0,"#0ea5e9"); grad.addColorStop(1,"#2563eb");
     ctx.fillStyle = grad;
     ctx.beginPath(); ctx.arc(size/2,size/2,size*.34,0,Math.PI*2); ctx.fill();
     ctx.fillStyle = "#0b0c10"; ctx.font = `bold ${size*.32}px Georgia`; ctx.textAlign="center"; ctx.textBaseline="middle";
