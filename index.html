@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Los Elegidos de Epatein</title>
-<meta name="description" content="Los Elegidos de Epstein" />
+<title>Los Elegidos de Carpinteri — Comunidad</title>
+<meta name="description" content="Los Elegidos de Carpinteri — un foro premium para publicar, reaccionar y conversar en tiempo real." />
 <meta name="theme-color" content="#0b0c10" />
 
 <!--
@@ -897,6 +897,19 @@ let db = null;
 let fsApi = null; // funciones modulares de Firestore, cargadas dinámicamente
 const FIREBASE_ENABLED = !!firebaseConfig.projectId;
 
+/* Firestore puede fallar en el momento (no en la carga del SDK) si un
+   bloqueador de anuncios o Brave Shields corta las conexiones a
+   firestore.googleapis.com. En ese caso avisamos UNA sola vez y la app
+   sigue funcionando en modo local (localStorage) sin romperse. */
+let firestoreBlockedWarned = false;
+function warnFirestoreBlocked(err){
+  console.warn("No se pudo conectar con Firestore (¿bloqueador de anuncios o Brave Shields activo?):", err);
+  if(!firestoreBlockedWarned){
+    firestoreBlockedWarned = true;
+    toast("No se pudo conectar con la base de datos en tiempo real (revisá Brave Shields / tu bloqueador de anuncios). Se sigue funcionando en este navegador.", "warn");
+  }
+}
+
 async function initFirebase(){
   if(!FIREBASE_ENABLED) return;
   try{
@@ -919,18 +932,22 @@ function listenRealtimePosts(){
     const remote = [];
     snap.forEach(docSnap=> remote.push({ id: docSnap.id, ...docSnap.data() }));
     if(remote.length){ state.posts = remote; renderFeed(); }
-  });
+  }, err=> warnFirestoreBlocked(err));
 }
 
 async function pushPostRemote(post){
   if(!db) return false;
-  await fsApi.addDoc(fsApi.collection(db, "posts"), { ...post, createdAt: fsApi.serverTimestamp() });
-  return true;
+  try{
+    await fsApi.addDoc(fsApi.collection(db, "posts"), { ...post, createdAt: fsApi.serverTimestamp() });
+    return true;
+  }catch(err){ warnFirestoreBlocked(err); return false; }
 }
 async function updatePostRemote(id, patch){
   if(!db) return false;
-  await fsApi.updateDoc(fsApi.doc(db, "posts", id), patch);
-  return true;
+  try{
+    await fsApi.updateDoc(fsApi.doc(db, "posts", id), patch);
+    return true;
+  }catch(err){ warnFirestoreBlocked(err); return false; }
 }
 
 /* =====================================================================
@@ -1078,7 +1095,7 @@ async function findUserRecord(username){
       const snap = await fsApi.getDoc(fsApi.doc(db, "users", username));
       return snap.exists() ? snap.data() : null;
     }catch(err){
-      console.warn("Firestore no respondió al buscar el usuario, se usa el navegador como respaldo:", err);
+      warnFirestoreBlocked(err);
     }
   }
   return getLocalUsers().find(u=>u.username===username) || null;
@@ -1090,8 +1107,7 @@ async function saveUserRecord(record){
       await fsApi.setDoc(fsApi.doc(db, "users", record.username), record);
       return;
     }catch(err){
-      console.warn("Firestore no respondió al guardar el usuario, se guarda en este navegador:", err);
-      toast("No se pudo guardar en Firebase (revisá las reglas de Firestore). Se guardó en este navegador.", "warn");
+      warnFirestoreBlocked(err);
     }
   }
   const users = getLocalUsers();
