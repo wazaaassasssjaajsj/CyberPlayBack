@@ -536,27 +536,87 @@ img{ max-width:100%; display:block; }
   display:none; position:fixed; bottom:22px; right:22px; width:56px; height:56px; border-radius:50%;
   background:linear-gradient(135deg, var(--accent), #f4cd7a); color:var(--accent-ink); z-index:150;
   align-items:center; justify-content:center; box-shadow:var(--shadow-glow); cursor:pointer; border:none;
+  bottom:calc(22px + env(safe-area-inset-bottom)); right:calc(22px + env(safe-area-inset-right));
 }
 .fab svg{ width:24px; height:24px; }
+
+/* Botón de búsqueda para mobile + cierre dentro de la barra */
+.mobile-search-toggle{ display:none; }
+.mobile-search-close{ display:none; background:none; border:none; color:var(--text-faint); cursor:pointer; padding:6px; margin-left:2px; flex:none; }
+
+/* Backdrop oscuro detrás del sidebar en mobile */
+.sidebar-backdrop{
+  display:none; position:fixed; inset:0; top:var(--topbar-h); z-index:290;
+  background:rgba(0,0,0,.5); backdrop-filter:blur(2px); opacity:0; transition:opacity var(--t-med) var(--ease);
+}
+.sidebar-backdrop.open{ display:block; opacity:1; }
 
 /* =====================================================================
    9. RESPONSIVE
    ===================================================================== */
 @media (max-width:1180px){ .rightbar{ display:none; } }
+
 @media (max-width:920px){
-  .sidebar{ position:fixed; left:0; top:var(--topbar-h); height:calc(100vh - var(--topbar-h)); background:var(--bg-elevated);
-    border-right:1px solid var(--border); z-index:300; transform:translateX(-104%); transition:transform var(--t-med) var(--ease); }
+  .sidebar{
+    position:fixed; left:0; top:var(--topbar-h); height:calc(100vh - var(--topbar-h)); width:min(82vw, 300px);
+    background:var(--bg-elevated); border-right:1px solid var(--border); z-index:300;
+    transform:translateX(-104%); transition:transform var(--t-med) var(--ease);
+    padding-bottom:calc(40px + env(safe-area-inset-bottom));
+  }
   .sidebar.open{ transform:translateX(0); box-shadow:var(--shadow-md); }
+
   .searchbar{ display:none; }
-  .feed-col{ padding:16px 12px 90px; }
+  .searchbar.mobile-open{
+    display:flex !important; position:fixed; top:var(--topbar-h); left:0; right:0; margin:0;
+    height:56px; padding:0 16px; border-radius:0; border-left:none; border-right:none;
+    background:var(--bg-elevated); z-index:250; flex:none;
+    animation:search-slide-down .25s var(--ease);
+  }
+  .searchbar.mobile-open input{ font-size:16px; } /* evita el zoom automático de iOS al enfocar */
+  .searchbar kbd{ display:none; }
+  .mobile-search-toggle{ display:grid; }
+
+  .feed-col{ padding:14px 10px 90px; }
   .fab{ display:flex; }
   .btn-primary.composer-desktop{ display:none; }
+  .auth-pill span{ display:none; } /* solo el avatar en el topbar para ganar espacio */
+  .auth-pill{ padding:4px; }
+
+  /* Objetivos táctiles más grandes en el feed */
+  .action-btn{ padding:10px 12px; }
+  .reaction-chip{ padding:7px 11px; }
+  .post-actions{ flex-wrap:wrap; row-gap:4px; }
+
+  /* Modales como hoja inferior: más naturales para pulgar en celular */
+  .overlay{ align-items:flex-end; padding:0; }
+  .modal{
+    max-width:100%; width:100%; max-height:90vh; border-radius:20px 20px 0 0;
+    border-left:none; border-right:none; border-bottom:none;
+    padding-bottom:env(safe-area-inset-bottom);
+    transform:translateY(100%);
+  }
+  .overlay.open .modal{ transform:translateY(0); }
+
+  /* Inputs a 16px para que iOS no haga zoom al tocarlos */
+  .field input[type=text], .field input[type=password], .field textarea,
+  .comment-input-wrap input{ font-size:16px; }
+
+  .notif-panel{ right:10px; left:10px; width:auto; }
 }
+
 @media (max-width:520px){
-  .topbar{ padding:0 12px; gap:10px; }
+  .topbar{ padding:0 10px; gap:8px; height:60px; }
+  :root{ --topbar-h:60px; }
   .brand-text small{ display:none; }
-  .post-title{ font-size:17px; }
+  .brand-text b{ font-size:15.5px; }
+  .post-title{ font-size:16.5px; }
+  .post-desc{ font-size:13.2px; }
+  .icon-btn{ width:36px; height:36px; }
+  .card{ padding:14px; }
+  .comments{ padding:10px 12px 14px; }
 }
+
+@keyframes search-slide-down{ from{ transform:translateY(-100%); opacity:.4; } to{ transform:translateY(0); opacity:1; } }
 
 /* Menu hamburguesa (solo visible en mobile) */
 .menu-toggle{ display:none; }
@@ -592,11 +652,18 @@ img{ max-width:100%; display:block; }
       </div>
     </div>
 
-    <div class="searchbar">
+    <div class="searchbar" id="searchBar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input type="text" id="searchInput" placeholder="Buscar publicaciones, etiquetas o autores…" autocomplete="off" />
       <kbd>/</kbd>
+      <button type="button" class="mobile-search-close" id="mobileSearchClose" aria-label="Cerrar búsqueda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
     </div>
+
+    <button class="icon-btn mobile-search-toggle" id="mobileSearchToggle" aria-label="Buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    </button>
 
     <div class="spacer"></div>
 
@@ -622,6 +689,7 @@ img{ max-width:100%; display:block; }
 
   <div class="shell">
     <!-- ============ SIDEBAR ============ -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <aside class="sidebar" id="sidebar">
       <div class="side-section">
         <div class="side-title">Navegación</div>
@@ -823,6 +891,10 @@ img{ max-width:100%; display:block; }
         <span>Cursor personalizado</span>
         <div class="switch on" id="cursorSwitch"></div>
       </div>
+      <div class="switch-row">
+        <span>Base de datos</span>
+        <span id="dbStatusLabel" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface-hover);color:var(--text-dim);">Verificando…</span>
+      </div>
       <div class="switch-row" style="border-bottom:none;">
         <span id="authSettingsLabel">Sesión</span>
         <button class="btn btn-ghost" id="authSettingsBtn" style="height:32px;padding:0 14px;font-size:12px;">Iniciar sesión</button>
@@ -904,10 +976,40 @@ const FIREBASE_ENABLED = !!firebaseConfig.projectId;
 let firestoreBlockedWarned = false;
 function warnFirestoreBlocked(err){
   console.warn("No se pudo conectar con Firestore (¿bloqueador de anuncios o Brave Shields activo?):", err);
+  setDbStatus("local");
   if(!firestoreBlockedWarned){
     firestoreBlockedWarned = true;
     toast("No se pudo conectar con la base de datos en tiempo real (revisá Brave Shields / tu bloqueador de anuncios). Se sigue funcionando en este navegador.", "warn");
   }
+}
+
+/* Evita que cualquier llamada a Firestore se quede esperando para
+   siempre cuando la conexión está bloqueada: si no responde en 5
+   segundos, se corta y se cae al respaldo local. */
+function withTimeout(promise, ms=5000){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=> setTimeout(()=> reject(new Error("Firestore no respondió a tiempo (timeout)")), ms))
+  ]);
+}
+
+/* Indicador de estado de la base de datos: "checking" | "connected" | "local".
+   Se muestra en Configuración para que sea evidente si las publicaciones
+   se están compartiendo de verdad o solo quedan en este navegador. */
+let dbStatus = FIREBASE_ENABLED ? "checking" : "local";
+function setDbStatus(status){
+  dbStatus = status;
+  const label = document.getElementById("dbStatusLabel");
+  if(!label) return;
+  const map = {
+    checking:  { text:"Verificando…",        bg:"var(--surface-hover)", color:"var(--text-dim)" },
+    connected: { text:"Conectada (Firebase)", bg:"rgba(20,184,166,.18)", color:"var(--accent-3)" },
+    local:     { text:"Modo local (sin sync)",bg:"rgba(239,91,91,.15)",  color:"var(--danger)" },
+  };
+  const m = map[status] || map.checking;
+  label.textContent = m.text;
+  label.style.background = m.bg;
+  label.style.color = m.color;
 }
 
 async function initFirebase(){
@@ -921,6 +1023,7 @@ async function initFirebase(){
     listenRealtimePosts();
   }catch(err){
     console.warn("Firebase no disponible, se continúa en modo local:", err);
+    setDbStatus("local");
   }
 }
 
@@ -929,6 +1032,7 @@ function listenRealtimePosts(){
   if(!db) return;
   const q = fsApi.query(fsApi.collection(db, "posts"), fsApi.orderBy("createdAt", "desc"), fsApi.limit(100));
   fsApi.onSnapshot(q, snap=>{
+    setDbStatus("connected");
     const remote = [];
     snap.forEach(docSnap=> remote.push({ id: docSnap.id, ...docSnap.data() }));
     if(remote.length){ state.posts = remote; renderFeed(); }
@@ -938,14 +1042,15 @@ function listenRealtimePosts(){
 async function pushPostRemote(post){
   if(!db) return false;
   try{
-    await fsApi.addDoc(fsApi.collection(db, "posts"), { ...post, createdAt: fsApi.serverTimestamp() });
+    await withTimeout(fsApi.addDoc(fsApi.collection(db, "posts"), { ...post, createdAt: fsApi.serverTimestamp() }));
+    setDbStatus("connected");
     return true;
   }catch(err){ warnFirestoreBlocked(err); return false; }
 }
 async function updatePostRemote(id, patch){
   if(!db) return false;
   try{
-    await fsApi.updateDoc(fsApi.doc(db, "posts", id), patch);
+    await withTimeout(fsApi.updateDoc(fsApi.doc(db, "posts", id), patch));
     return true;
   }catch(err){ warnFirestoreBlocked(err); return false; }
 }
@@ -1092,7 +1197,8 @@ function setLocalUsers(list){ saveJSON(LS_KEYS.users, list); }
 async function findUserRecord(username){
   if(FIREBASE_ENABLED && db){
     try{
-      const snap = await fsApi.getDoc(fsApi.doc(db, "users", username));
+      const snap = await withTimeout(fsApi.getDoc(fsApi.doc(db, "users", username)));
+      setDbStatus("connected");
       return snap.exists() ? snap.data() : null;
     }catch(err){
       warnFirestoreBlocked(err);
@@ -1104,7 +1210,8 @@ async function findUserRecord(username){
 async function saveUserRecord(record){
   if(FIREBASE_ENABLED && db){
     try{
-      await fsApi.setDoc(fsApi.doc(db, "users", record.username), record);
+      await withTimeout(fsApi.setDoc(fsApi.doc(db, "users", record.username), record));
+      setDbStatus("connected");
       return;
     }catch(err){
       warnFirestoreBlocked(err);
@@ -1261,7 +1368,7 @@ let membersCache = [];
 async function refreshMembersCache(){
   try{
     if(FIREBASE_ENABLED && db){
-      const snap = await fsApi.getDocs(fsApi.collection(db, "users"));
+      const snap = await withTimeout(fsApi.getDocs(fsApi.collection(db, "users")));
       membersCache = []; snap.forEach(d=> membersCache.push(d.data()));
     } else {
       membersCache = getLocalUsers();
@@ -1957,17 +2064,43 @@ document.querySelectorAll(".side-link[data-feed]").forEach(link=>{
     state.activeFeed = link.dataset.feed;
     state.visibleCount = 4;
     renderFeed();
-    document.getElementById("sidebar").classList.remove("open");
+    closeSidebar();
   });
 });
 
-document.getElementById("menuToggle").addEventListener("click", ()=> document.getElementById("sidebar").classList.toggle("open"));
+/* Sidebar mobile: abre/cierra junto con un backdrop oscuro detrás */
+function openSidebar(){
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("sidebarBackdrop").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarBackdrop").classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.getElementById("menuToggle").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.contains("open") ? closeSidebar() : openSidebar();
+});
+document.getElementById("sidebarBackdrop").addEventListener("click", closeSidebar);
+
 document.getElementById("brandHome").addEventListener("click", ()=>{
   state.activeFeed = "inicio"; state.activeTag = null; state.searchQuery = "";
   document.getElementById("searchInput").value = "";
   document.querySelectorAll(".side-link[data-feed]").forEach(l=>l.classList.toggle("active", l.dataset.feed==="inicio"));
   renderFeed();
 });
+
+/* Lupa de búsqueda en mobile: despliega la barra como overlay bajo el topbar */
+function openMobileSearch(){
+  document.getElementById("searchBar").classList.add("mobile-open");
+  document.getElementById("searchInput").focus();
+}
+function closeMobileSearch(){
+  document.getElementById("searchBar").classList.remove("mobile-open");
+}
+document.getElementById("mobileSearchToggle").addEventListener("click", openMobileSearch);
+document.getElementById("mobileSearchClose").addEventListener("click", closeMobileSearch);
 
 /* =====================================================================
    INFINITE SCROLL (Intersection Observer sobre el centinela)
@@ -1991,8 +2124,11 @@ sentinelObserver.observe(document.getElementById("loadSentinel"));
 document.addEventListener("keydown", (e)=>{
   const tag = (e.target.tagName||"").toLowerCase();
   const typing = tag==="input" || tag==="textarea";
-  if(e.key==="/" && !typing){ e.preventDefault(); document.getElementById("searchInput").focus(); }
-  if((e.key==="c"||e.key==="C") && !typing){ openOverlay("composerOverlay"); }
+  if(e.key==="/" && !typing){
+    e.preventDefault();
+    if(window.innerWidth<=920) openMobileSearch(); else document.getElementById("searchInput").focus();
+  }
+  if((e.key==="c"||e.key==="C") && !typing){ if(requireLogin()) openOverlay("composerOverlay"); }
   if((e.key==="t"||e.key==="T") && !typing){ document.getElementById("themeToggle").click(); }
   if((e.key===",") && !typing){ openOverlay("settingsOverlay"); }
   if(e.key==="Escape"){
@@ -2000,6 +2136,8 @@ document.addEventListener("keydown", (e)=>{
     document.getElementById("lightbox").classList.remove("open");
     notifPanel.classList.remove("open");
     closeCtxMenu();
+    closeSidebar();
+    closeMobileSearch();
   }
 });
 
@@ -2106,7 +2244,8 @@ window.addEventListener("scroll", ()=>{
   const manifest = {
     name: "Los Elegidos de Carpinteri",
     short_name: "Carpinteri",
-    start_url: ".",
+    start_url: location.href.split("#")[0],
+    scope: location.href.split("#")[0].replace(/[^/]*$/, ""),
     display: "standalone",
     background_color: "#0b0c10",
     theme_color: "#0b0c10",
@@ -2150,6 +2289,7 @@ function boot(){
   document.getElementById("particles").style.display = state.settings.bg ? "" : "none";
   document.body.style.cursor = state.settings.cursor ? "none" : "auto";
   renderAccentRow(); syncSettingsUI(); updateAuthUI();
+  setDbStatus(dbStatus);
   renderTagList(); renderFeed(); refreshMembersCache();
   loadCustomLogo();
   initFirebase();
