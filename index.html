@@ -893,7 +893,12 @@ img{ max-width:100%; display:block; }
       </div>
       <div class="switch-row">
         <span>Base de datos</span>
-        <span id="dbStatusLabel" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface-hover);color:var(--text-dim);">Verificando…</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="dbStatusLabel" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface-hover);color:var(--text-dim);">Verificando…</span>
+          <button type="button" id="dbRetryBtn" title="Reintentar conexión" style="background:none;border:none;color:var(--text-faint);cursor:pointer;padding:4px;display:grid;place-items:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M3 12a9 9 0 0115.3-6.4L21 8M21 3v5h-5M21 12a9 9 0 01-15.3 6.4L3 16M3 21v-5h5"/></svg>
+          </button>
+        </div>
       </div>
       <div class="switch-row" style="border-bottom:none;">
         <span id="authSettingsLabel">Sesión</span>
@@ -984,9 +989,10 @@ function warnFirestoreBlocked(err){
 }
 
 /* Evita que cualquier llamada a Firestore se quede esperando para
-   siempre cuando la conexión está bloqueada: si no responde en 5
-   segundos, se corta y se cae al respaldo local. */
-function withTimeout(promise, ms=5000){
+   siempre cuando la conexión está bloqueada o es muy lenta: si no
+   responde en 10 segundos (tiempo realista para una primera conexión
+   en frío desde datos móviles), se corta y se cae al respaldo local. */
+function withTimeout(promise, ms=10000){
   return Promise.race([
     promise,
     new Promise((_, reject)=> setTimeout(()=> reject(new Error("Firestore no respondió a tiempo (timeout)")), ms))
@@ -1018,12 +1024,39 @@ async function initFirebase(){
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
     const mod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const app = initializeApp(firebaseConfig);
-    db = mod.getFirestore(app);
     fsApi = mod;
+    /* Caché local persistente (IndexedDB): las lecturas ya vistas se
+       resuelven al instante desde el disco del dispositivo en vez de
+       depender pura y exclusivamente de la red en cada operación, y
+       las escrituras quedan en cola local si la conexión está caída.
+       Si el navegador no lo soporta (ej. pestaña privada en algunos
+       navegadores), caemos a la conexión estándar sin persistencia. */
+    try{
+      db = mod.initializeFirestore(app, {
+        localCache: mod.persistentLocalCache({ tabManager: mod.persistentMultipleTabManager() })
+      });
+    }catch(persistErr){
+      console.warn("Caché persistente no disponible, se usa Firestore sin caché local:", persistErr);
+      db = mod.getFirestore(app);
+    }
     listenRealtimePosts();
   }catch(err){
     console.warn("Firebase no disponible, se continúa en modo local:", err);
     setDbStatus("local");
+  }
+}
+
+/* Reintento manual desde el botón de Configuración: si ya hay conexión
+   (db creado), vuelve a suscribirse y refresca miembros/posts; si nunca
+   se pudo inicializar, lo intenta de nuevo desde cero. */
+async function retryFirestoreConnection(){
+  if(!FIREBASE_ENABLED) { setDbStatus("local"); return; }
+  if(db){
+    listenRealtimePosts();
+    await refreshMembersCache();
+  } else {
+    await initFirebase();
+    await refreshMembersCache();
   }
 }
 
@@ -1224,6 +1257,9 @@ async function saveUserRecord(record){
 }
 
 async function registerUser(name, username, password){
+  const btn = document.getElementById("registerSubmit");
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.style.opacity = ".6"; btn.textContent = "Creando cuenta…";
   try{
     username = (username||"").trim().toLowerCase().replace(/\s+/g,"");
     name = (name||"").trim();
@@ -1240,10 +1276,15 @@ async function registerUser(name, username, password){
   }catch(err){
     console.error("Error al crear la cuenta:", err);
     toast("No se pudo crear la cuenta. Revisá la consola (F12) para más detalles.", "error");
+  }finally{
+    btn.disabled = false; btn.style.opacity = ""; btn.textContent = originalText;
   }
 }
 
 async function loginUser(username, password){
+  const btn = document.getElementById("loginSubmit");
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.style.opacity = ".6"; btn.textContent = "Entrando…";
   try{
     username = (username||"").trim().toLowerCase().replace(/\s+/g,"");
     if(!username || !password){ toast("Completá usuario y contraseña", "error"); return; }
@@ -1256,6 +1297,8 @@ async function loginUser(username, password){
   }catch(err){
     console.error("Error al iniciar sesión:", err);
     toast("No se pudo iniciar sesión. Revisá la consola (F12) para más detalles.", "error");
+  }finally{
+    btn.disabled = false; btn.style.opacity = ""; btn.textContent = originalText;
   }
 }
 
@@ -1915,6 +1958,15 @@ document.getElementById("authTrigger").addEventListener("click", ()=>{
 document.getElementById("authSettingsBtn").addEventListener("click", ()=>{
   if(state.currentUser){ logoutUser(); }
   else{ closeOverlay("settingsOverlay"); openOverlay("authOverlay"); }
+});
+document.getElementById("dbRetryBtn").addEventListener("click", async (e)=>{
+  const svg = e.currentTarget.querySelector("svg");
+  svg.style.transition = "transform .6s var(--ease)";
+  svg.style.transform = "rotate(360deg)";
+  setDbStatus("checking");
+  firestoreBlockedWarned = false; // permite un nuevo aviso si vuelve a fallar
+  await retryFirestoreConnection();
+  setTimeout(()=>{ svg.style.transition = "none"; svg.style.transform = "rotate(0deg)"; }, 650);
 });
 document.querySelectorAll("[data-auth-tab]").forEach(tab=>{
   tab.addEventListener("click", ()=>{
