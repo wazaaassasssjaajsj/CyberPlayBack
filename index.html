@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Los Elegidos de Carpinteri — Comunidad</title>
-<meta name="description" content="Los Elegidos de Carpinteri — un foro premium para publicar, reaccionar y conversar en tiempo real." />
+<title>Los Elegidos de Epstei — Comunidad</title>
+<meta name="description" content="Los Elegidos de Epstei — un foro premium para publicar, reaccionar y conversar en tiempo real." />
 <meta name="theme-color" content="#0b0c10" />
 
 <!--
@@ -1025,20 +1025,7 @@ async function initFirebase(){
     const mod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const app = initializeApp(firebaseConfig);
     fsApi = mod;
-    /* Caché local persistente (IndexedDB): las lecturas ya vistas se
-       resuelven al instante desde el disco del dispositivo en vez de
-       depender pura y exclusivamente de la red en cada operación, y
-       las escrituras quedan en cola local si la conexión está caída.
-       Si el navegador no lo soporta (ej. pestaña privada en algunos
-       navegadores), caemos a la conexión estándar sin persistencia. */
-    try{
-      db = mod.initializeFirestore(app, {
-        localCache: mod.persistentLocalCache({ tabManager: mod.persistentMultipleTabManager() })
-      });
-    }catch(persistErr){
-      console.warn("Caché persistente no disponible, se usa Firestore sin caché local:", persistErr);
-      db = mod.getFirestore(app);
-    }
+    db = mod.getFirestore(app);
     listenRealtimePosts();
   }catch(err){
     console.warn("Firebase no disponible, se continúa en modo local:", err);
@@ -1060,12 +1047,16 @@ async function retryFirestoreConnection(){
   }
 }
 
-/* Escucha en tiempo real de la colección "posts" */
+/* Escucha en tiempo real de la colección "posts". Pedimos los cambios
+   de metadata (includeMetadataChanges) para poder distinguir una
+   respuesta genuina del servidor (metadata.fromCache === false) de
+   una simple lectura de la caché local — así el indicador "Conectada"
+   deja de ser un cuento y refleja lo que realmente pasó. */
 function listenRealtimePosts(){
   if(!db) return;
   const q = fsApi.query(fsApi.collection(db, "posts"), fsApi.orderBy("createdAt", "desc"), fsApi.limit(100));
-  fsApi.onSnapshot(q, snap=>{
-    setDbStatus("connected");
+  fsApi.onSnapshot(q, { includeMetadataChanges:true }, snap=>{
+    if(!snap.metadata.fromCache) setDbStatus("connected");
     const remote = [];
     snap.forEach(docSnap=> remote.push({ id: docSnap.id, ...docSnap.data() }));
     if(remote.length){ state.posts = remote; renderFeed(); }
@@ -1076,7 +1067,6 @@ async function pushPostRemote(post){
   if(!db) return false;
   try{
     await withTimeout(fsApi.addDoc(fsApi.collection(db, "posts"), { ...post, createdAt: fsApi.serverTimestamp() }));
-    setDbStatus("connected");
     return true;
   }catch(err){ warnFirestoreBlocked(err); return false; }
 }
@@ -1230,7 +1220,10 @@ function setLocalUsers(list){ saveJSON(LS_KEYS.users, list); }
 async function findUserRecord(username){
   if(FIREBASE_ENABLED && db){
     try{
-      const snap = await withTimeout(fsApi.getDoc(fsApi.doc(db, "users", username)));
+      /* getDocFromServer fuerza una lectura real al servidor: si no hay
+         conexión de verdad, esto rechaza (no hay forma de que "mienta"
+         devolviendo una respuesta de caché disfrazada de éxito). */
+      const snap = await withTimeout(fsApi.getDocFromServer(fsApi.doc(db, "users", username)));
       setDbStatus("connected");
       return snap.exists() ? snap.data() : null;
     }catch(err){
@@ -1244,7 +1237,6 @@ async function saveUserRecord(record){
   if(FIREBASE_ENABLED && db){
     try{
       await withTimeout(fsApi.setDoc(fsApi.doc(db, "users", record.username), record));
-      setDbStatus("connected");
       return;
     }catch(err){
       warnFirestoreBlocked(err);
@@ -1411,12 +1403,13 @@ let membersCache = [];
 async function refreshMembersCache(){
   try{
     if(FIREBASE_ENABLED && db){
-      const snap = await withTimeout(fsApi.getDocs(fsApi.collection(db, "users")));
+      const snap = await withTimeout(fsApi.getDocsFromServer(fsApi.collection(db, "users")));
+      setDbStatus("connected");
       membersCache = []; snap.forEach(d=> membersCache.push(d.data()));
     } else {
       membersCache = getLocalUsers();
     }
-  }catch(e){ membersCache = getLocalUsers(); }
+  }catch(e){ warnFirestoreBlocked(e); membersCache = getLocalUsers(); }
   renderMembers();
 }
 function renderMembers(){
