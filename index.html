@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Los Elegidos de Epstei — Comunidad</title>
-<meta name="description" content="Los Elegidos de Epstei — un foro premium para publicar, reaccionar y conversar en tiempo real." />
+<title>Los Elegidos de Carpinteri — Comunidad</title>
+<meta name="description" content="Los Elegidos de Carpinteri — un foro premium para publicar, reaccionar y conversar en tiempo real." />
 <meta name="theme-color" content="#0b0c10" />
 
 <!--
@@ -1021,8 +1021,8 @@ function setDbStatus(status){
 async function initFirebase(){
   if(!FIREBASE_ENABLED) return;
   try{
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-    const mod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js");
+    const mod = await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js");
     const app = initializeApp(firebaseConfig);
     fsApi = mod;
     db = mod.getFirestore(app);
