@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Respawnia</title>
+<title>Respawnia — Comunidad</title>
 <meta name="description" content="Respawnia — un foro premium para publicar, reaccionar y conversar en tiempo real." />
 <meta name="theme-color" content="#0b0c10" />
 
 <!--
   =====================================================================
-  Respawnia
+  RESPAWNIA
   Un solo archivo. Cero dependencias externas de build.
   CSS puro + JS puro. Firebase Firestore opcional para tiempo real.
   Estructura del archivo:
@@ -34,7 +34,7 @@
 <style>
 /* =====================================================================
    1. DESIGN TOKENS
-   Paleta: fondo casi negro con matiz azul; dorado "elegido" como acento
+   Paleta: fondo casi negro con matiz azul; celeste vibrante como acento
    primario; violeta como acento secundario para la aurora; verde teal
    como acento de éxito/online. Nada de cream/terracota por defecto.
    ===================================================================== */
@@ -54,7 +54,7 @@
   --text-faint:      #6b7080;
 
   /* acentos — personalizables desde Configuración */
-  --accent:          #0ea5e9; /* azul océano — "los elegidos" */
+  --accent:          #0ea5e9; /* azul océano — Respawnia */
   --accent-ink:      #01202e;
   --accent-2:        #2563eb; /* azul profundo — aurora / realce */
   --accent-3:        #14b8a6; /* verde-azulado — espuma de mar / éxito */
@@ -645,9 +645,9 @@ img{ max-width:100%; display:block; }
     </button>
 
     <div class="brand" id="brandHome" role="button" tabindex="0">
-      <div class="brand-emblem" id="brandEmblem"><span>C</span></div>
+      <div class="brand-emblem" id="brandEmblem"><span>R</span></div>
       <div class="brand-text">
-        <b>Los Elegidos de Carpinteri</b>
+        <b>Respawnia</b>
         <small>Comunidad · Foro</small>
       </div>
     </div>
@@ -733,7 +733,7 @@ img{ max-width:100%; display:block; }
     <main class="feed-col" id="feedCol">
       <div class="composer-trigger" id="openComposerInline">
         <div class="avatar" id="myAvatarInline" style="width:34px;height:34px;"></div>
-        <span id="composerPlaceholder">¿Qué querés compartir con los elegidos hoy?</span>
+        <span id="composerPlaceholder">¿Qué querés compartir con Respawnia hoy?</span>
       </div>
 
       <div class="feed-tabs">
@@ -793,7 +793,7 @@ img{ max-width:100%; display:block; }
       </div>
       <div class="field">
         <label for="postTitleInput">Título</label>
-        <input type="text" id="postTitleInput" maxlength="90" placeholder="Un título que llame la atención de los elegidos…" />
+        <input type="text" id="postTitleInput" maxlength="90" placeholder="Un título que llame la atención de Respawnia…" />
       </div>
       <div class="field">
         <label for="postDescInput">Descripción (admite **negrita**, *cursiva*, `código`)</label>
@@ -1025,7 +1025,7 @@ async function initFirebase(){
     const mod = await import("https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js");
     const app = initializeApp(firebaseConfig);
     fsApi = mod;
-    db = mod.getFirestore(app);
+    db = mod.getFirestore(app, "(default)");
     listenRealtimePosts();
   }catch(err){
     console.warn("Firebase no disponible, se continúa en modo local:", err);
@@ -1434,7 +1434,7 @@ function renderProfile(){
   document.getElementById("authLabel").textContent = loggedIn ? state.currentUser.name : "Ingresar";
 
   const placeholder = document.getElementById("composerPlaceholder");
-  if(placeholder) placeholder.textContent = loggedIn ? "¿Qué querés compartir con los elegidos hoy?" : "Iniciá sesión para publicar…";
+  if(placeholder) placeholder.textContent = loggedIn ? "¿Qué querés compartir con Respawnia hoy?" : "Iniciá sesión para publicar…";
 
   const body = document.getElementById("profileCardBody");
   if(loggedIn){
@@ -2287,8 +2287,8 @@ window.addEventListener("scroll", ()=>{
    ===================================================================== */
 (function setupPWA(){
   const manifest = {
-    name: "Los Elegidos de Carpinteri",
-    short_name: "Carpinteri",
+    name: "Respawnia",
+    short_name: "Respawnia",
     start_url: location.href.split("#")[0],
     scope: location.href.split("#")[0].replace(/[^/]*$/, ""),
     display: "standalone",
