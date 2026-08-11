@@ -540,6 +540,14 @@ img{ max-width:100%; display:block; }
 }
 .fab svg{ width:24px; height:24px; }
 
+/* Botón invisible de acceso al panel de admin: 18x18px en la esquina
+   inferior izquierda, sin ningún indicio visual. Solo vos sabés que
+   está ahí. */
+.hidden-admin-trigger{
+  position:fixed; bottom:0; left:0; width:18px; height:18px; padding:0; margin:0;
+  background:transparent; border:none; opacity:0; z-index:50; cursor:default;
+}
+
 /* Botón de búsqueda para mobile + cierre dentro de la barra */
 .mobile-search-toggle{ display:none; }
 .mobile-search-close{ display:none; background:none; border:none; color:var(--text-faint); cursor:pointer; padding:6px; margin-left:2px; flex:none; }
@@ -771,6 +779,9 @@ img{ max-width:100%; display:block; }
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
 </button>
 
+<!-- Acceso oculto al panel de administrador: sin texto, sin ícono, invisible a propósito -->
+<button type="button" class="hidden-admin-trigger" id="hiddenAdminTrigger" tabindex="-1" aria-hidden="true"></button>
+
 <!-- ============ MODAL: NUEVA PUBLICACIÓN ============ -->
 <div class="overlay" id="composerOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="composerTitle">
@@ -863,6 +874,19 @@ img{ max-width:100%; display:block; }
 
       <p class="field hint" id="authHint" style="margin-top:14px;"></p>
     </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: PANEL DE ADMINISTRADOR (acceso oculto) ============ -->
+<div class="overlay" id="adminGateOverlay">
+  <div class="modal" style="max-width:420px;" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2>Panel de administrador</h2>
+      <button class="icon-btn" data-close-overlay="adminGateOverlay" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="adminGateBody"><!-- llenado dinámicamente --></div>
   </div>
 </div>
 
@@ -969,6 +993,18 @@ const firebaseConfig = {
   messagingSenderId: "483568883881",
   appId: "1:483568883881:web:5259c8b0e2db2d5c26b1b8"
 };
+
+/* =====================================================================
+   ACCESO DE ADMINISTRADOR
+   -----------------------------------------------------------------
+   CAMBIÁ esta clave por una propia antes de publicar el sitio — es lo
+   único que hace falta para reclamar el rol de administrador la
+   primera vez (hay un botón invisible en la esquina inferior izquierda
+   de la pantalla). Una vez que alguien se convierte en admin con esta
+   clave, el sistema queda "bloqueado": nadie más puede reclamarlo de
+   nuevo aunque conozca la clave, ni siquiera vos con otra cuenta.
+   ===================================================================== */
+const ADMIN_SECRET = "CAMBIA-ESTA-CLAVE-2026";
 
 let db = null;
 let fsApi = null; // funciones modulares de Firestore, cargadas dinámicamente
@@ -1286,8 +1322,8 @@ async function registerUser(name, username, password){
     const salt = randomSalt();
     const hash = await sha256Hex(password + salt);
     const avatarSeed = uid();
-    await saveUserRecord({ username, name, salt, hash, avatarSeed, createdAt: Date.now() });
-    applySession({ username, name, avatarSeed });
+    await saveUserRecord({ username, name, salt, hash, avatarSeed, role:"user", createdAt: Date.now() });
+    applySession({ username, name, avatarSeed, role:"user" });
     toast(`¡Cuenta creada! Bienvenido, ${name}`, "success");
   }catch(err){
     console.error("Error al crear la cuenta:", err);
@@ -1308,7 +1344,7 @@ async function loginUser(username, password){
     if(!record){ toast("No existe ese usuario", "error"); return; }
     const hash = await sha256Hex(password + record.salt);
     if(hash !== record.hash){ toast("Contraseña incorrecta", "error"); return; }
-    applySession({ username: record.username, name: record.name, avatarSeed: record.avatarSeed });
+    applySession({ username: record.username, name: record.name, avatarSeed: record.avatarSeed, role: record.role || "user" });
     toast(`¡Bienvenido de nuevo, ${record.name}!`, "success");
   }catch(err){
     console.error("Error al iniciar sesión:", err);
@@ -1339,6 +1375,119 @@ function requireLogin(){
   openOverlay("authOverlay");
   toast("Iniciá sesión para continuar", "warn");
   return false;
+}
+
+/* =====================================================================
+   PANEL DE ADMINISTRADOR
+   -----------------------------------------------------------------
+   Acceso: botón invisible en la esquina inferior izquierda de la
+   pantalla. La primera persona que ingrese la clave correcta de
+   ADMIN_SECRET (y tenga sesión iniciada) se convierte en el único
+   admin del sitio — el "candado" queda guardado en Firestore (o en
+   este navegador si Firebase no está disponible), así que ni siquiera
+   conociendo la clave alguien más puede reclamarlo después.
+   ===================================================================== */
+async function getAdminLock(){
+  if(FIREBASE_ENABLED && db){
+    try{
+      const snap = await withTimeout(fsApi.getDocFromServer(fsApi.doc(db, "meta", "admin")));
+      return snap.exists() ? snap.data().username : null;
+    }catch(err){ warnFirestoreBlocked(err); }
+  }
+  return localStorage.getItem("lec_admin_lock") || null;
+}
+async function setAdminLock(username){
+  if(FIREBASE_ENABLED && db){
+    try{ await withTimeout(fsApi.setDoc(fsApi.doc(db, "meta", "admin"), { username })); return; }
+    catch(err){ warnFirestoreBlocked(err); }
+  }
+  localStorage.setItem("lec_admin_lock", username);
+}
+
+async function claimAdmin(passphrase){
+  const btn = document.getElementById("claimAdminBtn");
+  if(passphrase !== ADMIN_SECRET){ toast("Clave incorrecta", "error"); return; }
+  if(!state.currentUser){
+    toast("Iniciá sesión primero con la cuenta que querés usar como admin", "warn");
+    closeOverlay("adminGateOverlay"); openOverlay("authOverlay");
+    return;
+  }
+  if(btn){ btn.disabled = true; btn.textContent = "Verificando…"; }
+  try{
+    const existingAdmin = await getAdminLock();
+    if(existingAdmin && existingAdmin !== state.currentUser.username){
+      toast("Ya existe un administrador en este sitio", "error");
+      return;
+    }
+    await setAdminLock(state.currentUser.username);
+    const record = await findUserRecord(state.currentUser.username);
+    await saveUserRecord({ ...(record||{}), username: state.currentUser.username, name: state.currentUser.name, avatarSeed: state.currentUser.avatarSeed, role:"admin" });
+    state.currentUser.role = "admin";
+    persistSession();
+    toast("¡Listo! Ahora sos el administrador de este sitio", "success");
+    renderProfile();
+    renderAdminPanelBody();
+  }catch(err){
+    console.error("Error al reclamar el rol de admin:", err);
+    toast("No se pudo verificar. Probá de nuevo.", "error");
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = "Confirmar"; }
+  }
+}
+
+function openAdminPanel(){
+  renderAdminPanelBody();
+  openOverlay("adminGateOverlay");
+}
+
+function renderAdminPanelBody(){
+  const body = document.getElementById("adminGateBody");
+  if(!body) return;
+  if(state.currentUser && state.currentUser.role === "admin"){
+    body.innerHTML = `
+      <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 16px;">👑 Conectado como administrador (@${escapeHTML(state.currentUser.username)}).</p>
+      <div class="field">
+        <label>Miembros registrados</label>
+        <div style="font-size:13px;color:var(--text-dim);">${membersCache.length} cuenta(s)</div>
+      </div>
+      <button type="button" class="btn" style="width:100%;justify-content:center;background:var(--danger);color:#fff;margin-top:6px;" id="wipeUsersBtn">Eliminar todos los usuarios registrados</button>
+      <p class="field hint">Se conserva tu propia cuenta de administrador. El resto pierde acceso a sus cuentas actuales.</p>
+    `;
+    document.getElementById("wipeUsersBtn").addEventListener("click", wipeAllUsers);
+  } else {
+    body.innerHTML = `
+      <p style="font-size:12.5px;color:var(--text-dim);margin:0 0 16px;">Acceso de administrador. Ingresá la clave secreta para convertirte en el único admin de este sitio (necesitás sesión iniciada).</p>
+      <div class="field">
+        <label>Clave secreta</label>
+        <input type="password" id="adminPassInput" placeholder="••••••••" />
+      </div>
+      <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;" id="claimAdminBtn">Confirmar</button>
+    `;
+    document.getElementById("claimAdminBtn").addEventListener("click", ()=> claimAdmin(document.getElementById("adminPassInput").value));
+    document.getElementById("adminPassInput").addEventListener("keydown", e=>{ if(e.key==="Enter") claimAdmin(e.target.value); });
+  }
+}
+
+async function wipeAllUsers(){
+  if(!confirm("¿Eliminar TODOS los usuarios registrados? Nadie va a poder volver a entrar con sus cuentas actuales. Tu cuenta de administrador se conserva. Esta acción no se puede deshacer.")) return;
+  const btn = document.getElementById("wipeUsersBtn");
+  if(btn){ btn.disabled = true; btn.textContent = "Eliminando…"; }
+  try{
+    if(FIREBASE_ENABLED && db){
+      try{
+        const snap = await withTimeout(fsApi.getDocsFromServer(fsApi.collection(db, "users")));
+        const deletions = [];
+        snap.forEach(d=>{ if(d.id !== state.currentUser.username) deletions.push(fsApi.deleteDoc(fsApi.doc(db, "users", d.id))); });
+        await Promise.allSettled(deletions);
+      }catch(err){ warnFirestoreBlocked(err); }
+    }
+    setLocalUsers(getLocalUsers().filter(u=>u.username===state.currentUser.username));
+    await refreshMembersCache();
+    toast("Usuarios eliminados (se conservó tu cuenta de administrador)", "success");
+    renderAdminPanelBody();
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = "Eliminar todos los usuarios registrados"; }
+  }
 }
 
 /* =====================================================================
@@ -1466,7 +1615,7 @@ function renderProfile(){
     const likesCount = state.posts.reduce((a,p)=> a + (p.liked?1:0), 0);
     const savedCountP = state.posts.filter(p=>p.saved).length;
     body.innerHTML = `
-      <b>${escapeHTML(state.currentUser.name)}</b>
+      <b>${escapeHTML(state.currentUser.name)}${state.currentUser.role==="admin" ? " 👑" : ""}</b>
       <small>@${escapeHTML(state.currentUser.username)}</small>
       <div class="profile-stats">
         <div><b>${postsCount}</b><small>Posts</small></div>
@@ -1586,7 +1735,7 @@ function postHTML(p){
         Guardar
       </div>
       <div class="action-btn spacer"></div>
-      ${(state.currentUser && p.authorUsername===state.currentUser.username) ? `
+      ${(state.currentUser && (p.authorUsername===state.currentUser.username || state.currentUser.role==="admin")) ? `
       <div class="action-btn" data-delete="${p.id}" title="Eliminar publicación" style="color:var(--danger);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z"/></svg>
       </div>` : ``}
@@ -1659,7 +1808,9 @@ function findPost(id){ return state.posts.find(p=>p.id===id); }
 async function deletePost(postId){
   const post = findPost(postId);
   if(!post) return;
-  if(!state.currentUser || post.authorUsername !== state.currentUser.username){
+  const isOwner = state.currentUser && post.authorUsername === state.currentUser.username;
+  const isAdmin = state.currentUser && state.currentUser.role === "admin";
+  if(!isOwner && !isAdmin){
     toast("Solo podés eliminar tus propias publicaciones", "error");
     return;
   }
@@ -1985,6 +2136,7 @@ document.getElementById("dbRetryBtn").addEventListener("click", async (e)=>{
   await retryFirestoreConnection();
   setTimeout(()=>{ svg.style.transition = "none"; svg.style.transform = "rotate(0deg)"; }, 650);
 });
+document.getElementById("hiddenAdminTrigger").addEventListener("click", openAdminPanel);
 document.querySelectorAll("[data-auth-tab]").forEach(tab=>{
   tab.addEventListener("click", ()=>{
     document.querySelectorAll("[data-auth-tab]").forEach(t=>t.classList.remove("active"));
