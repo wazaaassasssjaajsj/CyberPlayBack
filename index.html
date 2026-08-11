@@ -1056,10 +1056,21 @@ function listenRealtimePosts(){
   if(!db) return;
   const q = fsApi.query(fsApi.collection(db, "posts"), fsApi.orderBy("createdAt", "desc"), fsApi.limit(100));
   fsApi.onSnapshot(q, { includeMetadataChanges:true }, snap=>{
-    if(!snap.metadata.fromCache) setDbStatus("connected");
     const remote = [];
     snap.forEach(docSnap=> remote.push({ id: docSnap.id, ...docSnap.data() }));
-    if(remote.length){ state.posts = remote; renderFeed(); }
+    /* Solo reemplazamos el feed local por lo que dice el servidor cuando
+       la respuesta es genuina (no una caché vacía por falta de red) —
+       así, si el servidor confirma que no hay publicaciones, se purgan
+       las que hayan quedado guardadas localmente de pruebas viejas en
+       vez de mostrarlas como fantasmas que ya no existen en Firestore. */
+    if(!snap.metadata.fromCache){
+      setDbStatus("connected");
+      state.posts = remote;
+      renderFeed();
+    } else if(remote.length){
+      state.posts = remote;
+      renderFeed();
+    }
   }, err=> warnFirestoreBlocked(err));
 }
 
@@ -1075,7 +1086,20 @@ async function updatePostRemote(id, patch){
   try{
     await withTimeout(fsApi.updateDoc(fsApi.doc(db, "posts", id), patch));
     return true;
-  }catch(err){ warnFirestoreBlocked(err); return false; }
+  }catch(err){
+    if(err.code === "not-found"){
+      /* Esto NO es un problema de conexión: la publicación es local,
+         de antes de que Firestore funcionara, y nunca existió en el
+         servidor. No mostramos el aviso de "sin conexión" porque
+         sería engañoso — sí hay conexión, el documento simplemente
+         no existe ahí. Con el fix de arriba, este caso debería dejar
+         de pasar una vez que el feed se sincronice de verdad. */
+      console.warn("La publicación no existe en Firestore (era local, de antes de la sincronización). No se pudo actualizar:", err);
+      return false;
+    }
+    warnFirestoreBlocked(err);
+    return false;
+  }
 }
 
 /* =====================================================================
