@@ -1,1406 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NULLPOINT // Breach Protocol</title>
+<style>
+/* __CSS__ */
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PANTALLA DE CARGA
+============================================================ -->
+<div id="loadingScreen" class="screen active">
+  <div class="load-wrap">
+    <div class="load-logo">
+      <span class="load-logo-null">NULL</span><span class="load-logo-point">POINT</span>
+    </div>
+    <div class="load-sub">TACTICAL BREACH PROTOCOL</div>
+    <div class="load-bar-track">
+      <div class="load-bar-fill" id="loadBarFill"></div>
+    </div>
+    <div class="load-pct" id="loadPct">0%</div>
+    <div class="load-tip" id="loadTip">Cargando...</div>
+  </div>
+  <div class="load-corner tl"></div>
+  <div class="load-corner tr"></div>
+  <div class="load-corner bl"></div>
+  <div class="load-corner br"></div>
+</div>
+
+<!-- ============================================================
+     AUTENTICACIÓN (LOGIN / REGISTRO)
+============================================================ -->
+<div id="authScreen" class="screen">
+  <div class="auth-bg-grid"></div>
+  <div class="auth-panel panel-chamfer">
+    <div class="auth-brand">
+      <span class="brand-null">NULL</span><span class="brand-point">POINT</span>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLoginBtn" data-tab="login">INICIAR SESIÓN</button>
+      <button class="auth-tab" id="tabRegisterBtn" data-tab="register">REGISTRARSE</button>
+    </div>
+
+    <form id="loginForm" class="auth-form active" autocomplete="off">
+      <label class="f-label">USUARIO</label>
+      <input type="text" id="loginUser" class="f-input" placeholder="Nombre de usuario" autocomplete="off">
+      <label class="f-label">CONTRASEÑA</label>
+      <input type="password" id="loginPass" class="f-input" placeholder="Contraseña" autocomplete="off">
+      <label class="f-check">
+        <input type="checkbox" id="loginRemember" checked>
+        <span>Recordar sesión</span>
+      </label>
+      <div class="f-error" id="loginError"></div>
+      <button type="submit" class="btn-primary" id="loginSubmitBtn">ACCEDER</button>
+    </form>
+
+    <form id="registerForm" class="auth-form" autocomplete="off">
+      <label class="f-label">USUARIO</label>
+      <input type="text" id="regUser" class="f-input" placeholder="Elegí un nombre de usuario" autocomplete="off">
+      <label class="f-label">CONTRASEÑA</label>
+      <input type="password" id="regPass" class="f-input" placeholder="Mínimo 6 caracteres" autocomplete="off">
+      <label class="f-label">CONFIRMAR CONTRASEÑA</label>
+      <input type="password" id="regPass2" class="f-input" placeholder="Repetí la contraseña" autocomplete="off">
+      <div class="f-error" id="registerError"></div>
+      <div class="f-ok" id="registerOk"></div>
+      <button type="submit" class="btn-primary" id="registerSubmitBtn">CREAR CUENTA</button>
+    </form>
+
+    <div class="auth-footnote">Sistema de cuentas 100% local — ver nota de seguridad en el código fuente.</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SHELL PRINCIPAL (post-login): topbar + vistas
+============================================================ -->
+<div id="appShell" class="screen">
+
+  <div class="topbar">
+    <div class="topbar-brand"><span class="brand-null">NULL</span><span class="brand-point">POINT</span></div>
+    <nav class="topbar-nav">
+      <button class="nav-btn active" data-view="menuView">JUGAR</button>
+      <button class="nav-btn" data-view="trainingSetupView">ENTRENAMIENTO</button>
+      <button class="nav-btn" data-view="inventoryView">INVENTARIO</button>
+      <button class="nav-btn" data-view="profileView">PERFIL</button>
+      <button class="nav-btn" data-view="settingsView">CONFIGURACIÓN</button>
+    </nav>
+    <div class="topbar-user">
+      <div class="topbar-user-info">
+        <span class="tu-name" id="topbarUsername">--</span>
+        <span class="tu-level" id="topbarLevel">NVL 1</span>
+      </div>
+      <div class="tu-money" id="topbarMoney">$0</div>
+      <button class="btn-logout" id="logoutBtn">CERRAR SESIÓN</button>
+    </div>
+  </div>
+
+  <!-- ---------- VISTA: MENU / JUGAR ---------- -->
+  <section id="menuView" class="view active">
+    <div class="menu-hero panel-chamfer">
+      <div class="menu-hero-title">OPERACIÓN: SUBESTACIÓN</div>
+      <div class="menu-hero-desc">Enfrentamiento táctico 5 contra 5. Eliminá al equipo rival, gestioná tu economía y controlá los puntos clave del mapa.</div>
+      <div class="menu-hero-actions">
+        <button class="btn-primary btn-large" id="playMatchBtn">JUGAR PARTIDA (vs BOTS)</button>
+      </div>
+      <div class="menu-hero-options">
+        <div class="opt-group">
+          <span class="opt-label">DIFICULTAD</span>
+          <div class="seg" id="difficultySeg">
+            <button class="seg-btn" data-val="easy">FÁCIL</button>
+            <button class="seg-btn active" data-val="normal">NORMAL</button>
+            <button class="seg-btn" data-val="hard">DIFÍCIL</button>
+          </div>
+        </div>
+        <div class="opt-group">
+          <span class="opt-label">TAMAÑO DE EQUIPO</span>
+          <div class="seg" id="teamSizeSeg">
+            <button class="seg-btn" data-val="3">3v3</button>
+            <button class="seg-btn active" data-val="5">5v5</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="menu-stats-row">
+      <div class="mini-stat panel-chamfer"><span class="ms-val" id="menuStatWins">0</span><span class="ms-label">VICTORIAS</span></div>
+      <div class="mini-stat panel-chamfer"><span class="ms-val" id="menuStatKD">0.00</span><span class="ms-label">K/D</span></div>
+      <div class="mini-stat panel-chamfer"><span class="ms-val" id="menuStatLevel">1</span><span class="ms-label">NIVEL</span></div>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: ENTRENAMIENTO SETUP ---------- -->
+  <section id="trainingSetupView" class="view">
+    <div class="menu-hero panel-chamfer">
+      <div class="menu-hero-title">CAMPO DE ENTRENAMIENTO</div>
+      <div class="menu-hero-desc">Practicá tu puntería contra dianas fijas y bots móviles inmóviles/en movimiento. Se registran precisión, kills y tiempo.</div>
+      <div class="menu-hero-actions">
+        <button class="btn-primary btn-large" id="playTrainingBtn">ENTRAR AL ENTRENAMIENTO</button>
+      </div>
+    </div>
+    <div class="menu-stats-row">
+      <div class="mini-stat panel-chamfer"><span class="ms-val" id="trainBestAcc">0%</span><span class="ms-label">MEJOR PRECISIÓN</span></div>
+      <div class="mini-stat panel-chamfer"><span class="ms-val" id="trainBestKills">0</span><span class="ms-label">MEJOR RACHA</span></div>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: INVENTARIO ---------- -->
+  <section id="inventoryView" class="view">
+    <div class="view-title">INVENTARIO DE SKINS</div>
+    <div class="inv-weapon-tabs" id="invWeaponTabs"></div>
+    <div class="inv-skin-grid" id="invSkinGrid"></div>
+  </section>
+
+  <!-- ---------- VISTA: PERFIL ---------- -->
+  <section id="profileView" class="view">
+    <div class="view-title">PERFIL DE OPERADOR</div>
+    <div class="profile-grid">
+      <div class="profile-card panel-chamfer">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-name" id="profileUsername">--</div>
+        <div class="profile-level-bar-track"><div class="profile-level-bar-fill" id="profileXpFill"></div></div>
+        <div class="profile-level-text"><span id="profileLevelText">Nivel 1</span> — <span id="profileXpText">0 / 100 XP</span></div>
+      </div>
+      <div class="profile-stats-grid">
+        <div class="pstat panel-chamfer"><span class="pstat-val" id="statWins">0</span><span class="pstat-label">VICTORIAS</span></div>
+        <div class="pstat panel-chamfer"><span class="pstat-val" id="statLosses">0</span><span class="pstat-label">DERROTAS</span></div>
+        <div class="pstat panel-chamfer"><span class="pstat-val" id="statKills">0</span><span class="pstat-label">KILLS</span></div>
+        <div class="pstat panel-chamfer"><span class="pstat-val" id="statDeaths">0</span><span class="pstat-label">MUERTES</span></div>
+        <div class="pstat panel-chamfer"><span class="pstat-val" id="statKD">0.00</span><span class="pstat-label">K/D</span></div>
+        <div class="pstat panel-chamfer"><span class="pstat-val" id="statMoney">$0</span><span class="pstat-label">FONDOS</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- VISTA: CONFIGURACIÓN ---------- -->
+  <section id="settingsView" class="view">
+    <div class="view-title">CONFIGURACIÓN</div>
+    <div class="settings-grid panel-chamfer">
+      <div class="setting-row">
+        <label>Sensibilidad del mouse</label>
+        <input type="range" id="setSensitivity" min="1" max="20" step="1">
+        <span class="setting-val" id="setSensitivityVal">--</span>
+      </div>
+      <div class="setting-row">
+        <label>Campo de visión (FOV)</label>
+        <input type="range" id="setFov" min="70" max="110" step="1">
+        <span class="setting-val" id="setFovVal">--</span>
+      </div>
+      <div class="setting-row">
+        <label>Volumen general</label>
+        <input type="range" id="setVolumeMaster" min="0" max="100" step="1">
+        <span class="setting-val" id="setVolumeMasterVal">--</span>
+      </div>
+      <div class="setting-row">
+        <label>Volumen de efectos</label>
+        <input type="range" id="setVolumeSfx" min="0" max="100" step="1">
+        <span class="setting-val" id="setVolumeSfxVal">--</span>
+      </div>
+      <div class="setting-row">
+        <label>Calidad gráfica</label>
+        <div class="seg" id="setQualitySeg">
+          <button class="seg-btn" data-val="low">BAJA</button>
+          <button class="seg-btn active" data-val="medium">MEDIA</button>
+          <button class="seg-btn" data-val="high">ALTA</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Mostrar FPS</label>
+        <label class="switch"><input type="checkbox" id="setShowFps"><span class="switch-track"></span></label>
+      </div>
+      <div class="setting-row">
+        <label>Color de mira</label>
+        <div class="seg" id="setCrosshairColorSeg">
+          <button class="seg-btn" data-val="#ff8a2b">AMBAR</button>
+          <button class="seg-btn" data-val="#3fe0c0">CYAN</button>
+          <button class="seg-btn" data-val="#ffffff">BLANCO</button>
+          <button class="seg-btn" data-val="#ff3f3f">ROJO</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Tamaño de mira</label>
+        <input type="range" id="setCrosshairSize" min="4" max="24" step="1">
+        <span class="setting-val" id="setCrosshairSizeVal">--</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     JUEGO (canvas 3D + HUD)
+============================================================ -->
+<div id="gameScreen" class="screen">
+  <canvas id="glcanvas"></canvas>
+
+  <!-- crosshair -->
+  <div id="crosshair" class="crosshair">
+    <div class="ch-line ch-top"></div>
+    <div class="ch-line ch-bottom"></div>
+    <div class="ch-line ch-left"></div>
+    <div class="ch-line ch-right"></div>
+    <div class="ch-dot"></div>
+  </div>
+
+  <!-- damage indicator vignette -->
+  <div id="damageVignette" class="damage-vignette"></div>
+  <div id="hitMarker" class="hit-marker"></div>
+
+  <!-- top center: round / timer -->
+  <div class="hud-top-center">
+    <div class="hud-round-info">
+      <span id="hudScoreBlue" class="hud-score blue">0</span>
+      <span class="hud-round-label" id="hudRoundLabel">RONDA 1</span>
+      <span id="hudScoreRed" class="hud-score red">0</span>
+    </div>
+    <div class="hud-timer" id="hudTimer">1:15</div>
+    <div class="hud-phase" id="hudPhase">COMPRA</div>
+  </div>
+
+  <!-- top left: FPS counter -->
+  <div class="hud-fps" id="hudFps">FPS: 0</div>
+
+  <!-- top right: kill feed -->
+  <div class="hud-killfeed" id="hudKillfeed"></div>
+
+  <!-- bottom left: health/armor -->
+  <div class="hud-bottom-left">
+    <div class="hud-vital">
+      <span class="hud-vital-icon">♥</span>
+      <div class="hud-bar-track"><div class="hud-bar-fill hp" id="hudHpFill"></div></div>
+      <span class="hud-vital-val" id="hudHpVal">100</span>
+    </div>
+    <div class="hud-vital">
+      <span class="hud-vital-icon">▣</span>
+      <div class="hud-bar-track"><div class="hud-bar-fill armor" id="hudArmorFill"></div></div>
+      <span class="hud-vital-val" id="hudArmorVal">0</span>
+    </div>
+  </div>
+
+  <!-- bottom right: ammo / weapon -->
+  <div class="hud-bottom-right">
+    <div class="hud-money" id="hudMoney">$800</div>
+    <div class="hud-weapon-name" id="hudWeaponName">TALON-9</div>
+    <div class="hud-ammo"><span id="hudAmmoClip">12</span><span class="hud-ammo-sep">/</span><span id="hudAmmoReserve">36</span></div>
+  </div>
+
+  <!-- bottom center: alive counts -->
+  <div class="hud-bottom-center">
+    <span class="hud-alive blue" id="hudAliveBlue">5</span>
+    <span class="hud-alive-label">VIVOS</span>
+    <span class="hud-alive red" id="hudAliveRed">5</span>
+  </div>
+
+  <!-- weapon switch bar -->
+  <div class="hud-weapon-bar" id="hudWeaponBar"></div>
+
+  <!-- training HUD -->
+  <div class="hud-training" id="hudTraining">
+    <div>Kills: <span id="trainKills">0</span></div>
+    <div>Precisión: <span id="trainAcc">0%</span></div>
+    <div>Tiempo: <span id="trainTime">60</span>s</div>
+  </div>
+
+  <!-- respawn / death overlay -->
+  <div id="deathOverlay" class="death-overlay">
+    <div class="death-title">HAS SIDO ELIMINADO</div>
+    <div class="death-sub" id="deathSub">Reapareciendo en la próxima ronda...</div>
+  </div>
+
+  <!-- center prompt (interact) -->
+  <div id="interactPrompt" class="interact-prompt"></div>
+
+  <!-- buy menu -->
+  <div id="buyMenu" class="buy-menu">
+    <div class="buy-panel panel-chamfer">
+      <div class="buy-header">
+        <span>TIENDA TÁCTICA</span>
+        <span class="buy-money" id="buyMoney">$800</span>
+        <span class="buy-timer" id="buyTimer">0:15</span>
+      </div>
+      <div class="buy-cats" id="buyCats"></div>
+      <div class="buy-footer">Presioná <b>B</b> para abrir/cerrar la tienda — <b>ESC</b> para cerrar</div>
+    </div>
+  </div>
+
+  <!-- pause menu -->
+  <div id="pauseMenu" class="pause-menu">
+    <div class="pause-panel panel-chamfer">
+      <div class="pause-title">PAUSA</div>
+      <button class="btn-primary" id="resumeBtn">CONTINUAR</button>
+      <button class="btn-secondary" id="pauseSettingsBtn">CONFIGURACIÓN</button>
+      <button class="btn-secondary" id="restartMatchBtn">REINICIAR PARTIDA</button>
+      <button class="btn-danger" id="exitToMenuBtn">SALIR AL MENÚ</button>
+    </div>
+  </div>
+
+  <!-- match end -->
+  <div id="matchEndScreen" class="match-end-screen">
+    <div class="match-end-panel panel-chamfer">
+      <div class="match-end-title" id="matchEndTitle">VICTORIA</div>
+      <div class="match-end-score" id="matchEndScore">7 - 3</div>
+      <div class="match-end-stats" id="matchEndStats"></div>
+      <button class="btn-primary" id="matchEndContinueBtn">CONTINUAR</button>
+    </div>
+  </div>
+
+  <!-- pointer lock prompt -->
+  <div id="lockPrompt" class="lock-prompt">
+    <div class="lock-prompt-inner panel-chamfer">
+      <div>CLIC PARA CAPTURAR EL MOUSE</div>
+      <div class="lock-prompt-sub">ESC para liberar / pausar</div>
+    </div>
+  </div>
+</div>
+
 <script>
-"use strict";
-
-/* =========================================================
-   VECTOR//9 — FIX PACK 1.1
-   ========================================================= */
-
-/* ---------- ESTADO SEGURO ---------- */
-
-function isGameActive() {
-  return game.running && !game.paused && game.player;
-}
-
-function isLiveGame() {
-  return isGameActive() &&
-         game.roundPhase === "live" &&
-         game.player.alive;
-}
-
-
-/* ---------- POINTER LOCK ---------- */
-
-/*
-  No asumimos que requestPointerLock() devuelve Promise.
-  Algunos navegadores todavía utilizan la versión clásica de la API.
-*/
-function requestPointer() {
-  const c = $("#view");
-
-  if (!c || !game.running || game.paused) return;
-
-  if (document.pointerLockElement === c) return;
-
-  if (!c.requestPointerLock) {
-    $("#roundmsg").innerHTML =
-      "<h2>MOUSE NO DISPONIBLE</h2>" +
-      "<p>Tu navegador no permite Pointer Lock. Hacé clic nuevamente sobre el juego.</p>";
-    return;
-  }
-
-  try {
-    const result = c.requestPointerLock({
-      unadjustedMovement: true
-    });
-
-    /*
-      Si el navegador soporta Promise y falla por
-      unadjustedMovement, hacemos fallback al modo normal.
-    */
-    if (result && typeof result.catch === "function") {
-      result.catch(() => {
-        try {
-          const fallback = c.requestPointerLock();
-
-          if (fallback && typeof fallback.catch === "function") {
-            fallback.catch(() => {
-              showPointerLockError();
-            });
-          }
-        } catch (err) {
-          showPointerLockError();
-        }
-      });
-    }
-  } catch (err) {
-    try {
-      c.requestPointerLock();
-    } catch (_) {
-      showPointerLockError();
-    }
-  }
-}
-
-function showPointerLockError() {
-  if (!game.running) return;
-
-  $("#roundmsg").innerHTML =
-    "<h2>HACÉ CLIC PARA JUGAR</h2>" +
-    "<p>El navegador bloqueó temporalmente el control del mouse.</p>";
-}
-
-document.addEventListener("pointerlockchange", () => {
-  const locked = document.pointerLockElement === $("#view");
-
-  if (!game.running) return;
-
-  /*
-    Si el usuario salió manualmente del pointer lock,
-    pausamos solamente durante una partida viva.
-  */
-  if (!locked && !game.paused && game.roundPhase === "live") {
-    game.paused = true;
-    $("#pause").style.display = "flex";
-  }
-});
-
-document.addEventListener("pointerlockerror", () => {
-  showPointerLockError();
-});
-
-$("#view").onclick = () => {
-  if (game.running && !game.paused) {
-    requestPointer();
-  }
-};
-
-
-/* ---------- INPUT ---------- */
-
-document.addEventListener("keydown", e => {
-  keys[e.code] = true;
-
-  if (e.repeat && ["Escape", "KeyB", "KeyR"].includes(e.code)) {
-    return;
-  }
-
-  if (e.code === "Escape" && game.running) {
-
-    /*
-      Si está abierta la tienda, Escape primero la cierra.
-    */
-    if ($("#buy").style.display === "block") {
-      $("#buy").style.display = "none";
-      return;
-    }
-
-    game.paused = !game.paused;
-    $("#pause").style.display = game.paused ? "flex" : "none";
-
-    if (game.paused) {
-      if (document.pointerLockElement) {
-        document.exitPointerLock();
-      }
-    } else {
-      requestPointer();
-    }
-
-    return;
-  }
-
-  if (e.code === "KeyB" &&
-      game.running &&
-      game.roundPhase === "buy") {
-
-    const buy = $("#buy");
-
-    buy.style.display =
-      buy.style.display === "block" ? "none" : "block";
-
-    renderBuy();
-    updateHUD();
-    return;
-  }
-
-  if (e.code === "KeyR" && isLiveGame()) {
-    reload();
-    return;
-  }
-
-  if (e.code === "Digit1" && isGameActive()) {
-    selectWeapon(0);
-    return;
-  }
-
-  if (e.code === "Digit2" && isGameActive()) {
-    selectWeapon(1);
-    return;
-  }
-
-  if (e.code === "Digit3" && isGameActive()) {
-    selectWeapon(2);
-    return;
-  }
-
-  if (e.code === "Digit4" && isGameActive()) {
-    selectWeapon(3);
-    return;
-  }
-
-  if (e.code === "Digit5" && isGameActive()) {
-    selectWeapon(4);
-    return;
-  }
-
-  if (e.code === "KeyE" && isLiveGame()) {
-    pickupWeapon();
-    return;
-  }
-});
-
-document.addEventListener("keyup", e => {
-  keys[e.code] = false;
-});
-
-document.addEventListener("mousedown", e => {
-  audioInit();
-
-  if (e.button === 0) {
-    mouse.left = true;
-
-    if (isLiveGame()) {
-      /*
-        Si todavía no tenemos pointer lock,
-        el primer click lo solicita.
-      */
-      if (document.pointerLockElement !== $("#view")) {
-        requestPointer();
-        return;
-      }
-
-      shoot();
-    }
-  }
-
-  if (e.button === 2) {
-    mouse.right = true;
-  }
-});
-
-document.addEventListener("mouseup", e => {
-  if (e.button === 0) mouse.left = false;
-  if (e.button === 2) mouse.right = false;
-});
-
-document.addEventListener("contextmenu", e => {
-  if (game.running) e.preventDefault();
-});
-
-document.addEventListener("mousemove", e => {
-  if (
-    document.pointerLockElement !== $("#view") ||
-    !game.running ||
-    game.paused
-  ) {
-    return;
-  }
-
-  const s = getProfile()?.settings || DEFAULT_SETTINGS;
-
-  game.yaw += e.movementX * 0.0022 * s.sens;
-  game.pitch -= e.movementY * 0.0018 * s.sens;
-
-  game.pitch = Math.max(
-    -0.7,
-    Math.min(0.7, game.pitch)
-  );
-});
-
-
-/* ---------- PAUSA ---------- */
-
-$("#resumeBtn").onclick = () => {
-  if (!game.running) return;
-
-  game.paused = false;
-  $("#pause").style.display = "none";
-
-  requestPointer();
-};
-
-$("#restartBtn").onclick = () => {
-  $("#pause").style.display = "none";
-
-  if (document.pointerLockElement) {
-    document.exitPointerLock();
-  }
-
-  startMatch(game.mode);
-};
-
-$("#exitBtn").onclick = () => {
-  game.running = false;
-  game.paused = false;
-
-  if (document.pointerLockElement) {
-    document.exitPointerLock();
-  }
-
-  $("#pause").style.display = "none";
-  $("#buy").style.display = "none";
-
-  show("menu");
-  updateMenu();
-};
-
-$("#pauseSettings").onclick = () => {
-  game.running = false;
-  game.paused = false;
-
-  if (document.pointerLockElement) {
-    document.exitPointerLock();
-  }
-
-  $("#pause").style.display = "none";
-  $("#buy").style.display = "none";
-
-  show("menu");
-
-  const settingsButton =
-    document.querySelector('[data-section="settings"]');
-
-  if (settingsButton) {
-    settingsButton.click();
-  }
-};
-
-
-/* =========================================================
-   DAMAGE / DEATH — REEMPLAZAR TODO EL PATCH ANTERIOR
-   ========================================================= */
-
-function awardKill(killer, victim) {
-  if (!killer || killer.kind !== "player") return;
-
-  /*
-    En entrenamiento no damos créditos ni estadísticas
-    competitivas.
-  */
-  if (game.mode === "training") {
-    game.trainingKills++;
-    return;
-  }
-
-  const p = getProfile();
-
-  p.stats.kills++;
-  p.stats.money += 300;
-
-  saveProfile();
-}
-
-function dropWeaponFromVictim(victim) {
-  if (!victim || victim.kind !== "bot") return;
-  if (!victim.weapon) return;
-  if (victim.weapon === "EDGE-KNIFE") return;
-
-  dropWeapon(
-    victim.x,
-    victim.y,
-    victim.weapon
-  );
-}
-
-function handlePlayerDeath() {
-  game.player.alive = false;
-
-  /*
-    En competitivo esperamos la resolución de la ronda.
-  */
-  if (game.mode === "competitive") {
-    $("#roundmsg").innerHTML =
-      '<h2 style="color:var(--red)">ELIMINADO</h2>' +
-      "<p>Esperando resolución de la ronda...</p>";
-
-    return;
-  }
-
-  /*
-    En entrenamiento reaparece después de 1.2 segundos.
-  */
-  setTimeout(() => {
-    if (
-      !game.running ||
-      game.mode !== "training"
-    ) {
-      return;
-    }
-
-    const s = spawnPos("blue");
-
-    game.player.x = s.x;
-    game.player.y = s.y;
-    game.player.hp = 100;
-    game.player.armor = 0;
-    game.player.alive = true;
-
-    game.yaw = 0;
-    game.pitch = 0;
-
-    updateHUD();
-  }, 1200);
-}
-
-function killEntity(victim, killer, head = false) {
-
-  if (!victim || !victim.alive) return;
-
-  victim.alive = false;
-  victim.hp = 0;
-  victim.deaths = (victim.deaths || 0) + 1;
-
-  if (killer) {
-    killer.kills = (killer.kills || 0) + 1;
-  }
-
-  addFeed(
-    killer?.kind === "player"
-      ? "TÚ"
-      : killer?.team === "blue"
-        ? "ALIADO"
-        : "ENEMIGO",
-
-    victim.kind === "player"
-      ? "TÚ"
-      : victim.team === "blue"
-        ? "ALIADO"
-        : "ENEMIGO",
-
-    head
-  );
-
-  tone(
-    head ? 1100 : 700,
-    .09,
-    "triangle",
-    .06
-  );
-
-  /*
-    MUERTE DEL JUGADOR
-  */
-  if (victim.kind === "player") {
-
-    if (game.mode === "competitive") {
-      const p = getProfile();
-
-      p.stats.deaths++;
-      saveProfile();
-    }
-
-    handlePlayerDeath();
-    return;
-  }
-
-  /*
-    MUERTE DE BOT
-  */
-  awardKill(killer, victim);
-
-  dropWeaponFromVictim(victim);
-}
-
-
-/* =========================================================
-   ROUND CONTROL
-   ========================================================= */
-
-function startMatch(mode = "competitive") {
-
-  audioInit();
-
-  game.mode = mode;
-  game.running = true;
-  game.paused = false;
-
-  game.blue = 0;
-  game.red = 0;
-  game.round = 1;
-
-  game.player = makePlayer();
-  initInventoryAmmo();
-
-  game.bots = [];
-
-  /*
-    Siempre tenemos 5v5.
-  */
-  for (let i = 0; i < 4; i++) {
-    game.bots.push(
-      makeBot(
-        "blue",
-        i,
-        mode === "training" ? "easy" : "normal"
-      )
-    );
-  }
-
-  for (let i = 0; i < 5; i++) {
-    game.bots.push(
-      makeBot(
-        "red",
-        i,
-        mode === "training"
-          ? "easy"
-          : i < 2
-            ? "easy"
-            : i < 4
-              ? "normal"
-              : "hard"
-      )
-    );
-  }
-
-  game.pickups = [];
-  game.particles = [];
-  game.tracers = [];
-  game.feed = [];
-
-  game.roundPhase = "buy";
-  game.buyTime = mode === "training" ? 0 : 15;
-  game.roundTime = 120;
-
-  game.roundmsg = $("#roundmsg");
-
-  game.trainingKills = 0;
-  game.trainingShots = 0;
-  game.trainingHits = 0;
-  game.trainingStart = performance.now();
-
-  show("game");
-
-  /*
-    En entrenamiento empezamos directamente.
-  */
-  if (mode === "training") {
-    $("#buy").style.display = "none";
-    beginRound();
-  } else {
-    $("#buy").style.display = "block";
-    renderBuy();
-  }
-
-  $("#pause").style.display = "none";
-
-  updateHUD();
-
-  /*
-    Pointer Lock requiere interacción del usuario;
-    si el navegador no lo acepta, el click en canvas
-    lo solicitará nuevamente.
-  */
-  requestPointer();
-}
-
-
-function beginRound() {
-
-  if (!game.running) return;
-
-  const p = game.player;
-
-  p.alive = true;
-  p.hp = 100;
-
-  /*
-    El armor comprado durante la fase de compra
-    se mantiene al comenzar la ronda.
-  */
-
-  const s = spawnPos("blue");
-
-  p.x = s.x;
-  p.y = s.y;
-
-  game.z = 0;
-  game.vz = 0;
-  game.ground = true;
-
-  /*
-    Evitamos que el jugador aparezca mirando
-    en una dirección completamente aleatoria.
-  */
-  game.yaw = 0;
-  game.pitch = 0;
-
-  p.weapon =
-    p.inventory.includes("KESTREL-C")
-      ? "KESTREL-C"
-      : p.inventory[0];
-
-  for (const b of game.bots) {
-
-    b.alive = true;
-    b.hp = 100;
-    b.reload = 0;
-    b.fireCd = 0;
-    b.target = null;
-    b.lastSeen = 0;
-
-    const sp = spawnPos(b.team);
-
-    b.x = sp.x;
-    b.y = sp.y;
-
-    const w = WEAPONS[b.weapon];
-
-    b.mag = w.mag;
-    b.reserve = w.reserve;
-
-    b.respawnTimer = 0;
-  }
-
-  game.roundPhase = "live";
-  game.roundTime =
-    game.mode === "training"
-      ? 999
-      : 120;
-
-  game.roundmsg.innerHTML = "";
-
-  $("#buy").style.display = "none";
-
-  updateHUD();
-}
-
-
-/* =========================================================
-   BOT RESPAWN — SOLO ENTRENAMIENTO
-   ========================================================= */
-
-function updateTraining(dt) {
-
-  if (game.mode !== "training") return;
-
-  for (const b of game.bots) {
-
-    if (b.alive) continue;
-
-    if (!b.respawnTimer) {
-      b.respawnTimer = 1.2;
-    }
-
-    b.respawnTimer -= dt;
-
-    if (b.respawnTimer > 0) continue;
-
-    const s = spawnPos("red");
-
-    b.x = s.x;
-    b.y = s.y;
-    b.hp = 100;
-    b.armor = 0;
-    b.alive = true;
-    b.target = null;
-    b.lastSeen = 0;
-    b.fireCd = 0;
-    b.reload = 0;
-    b.respawnTimer = 0;
-
-    const w = WEAPONS[b.weapon];
-
-    b.mag = w.mag;
-    b.reserve = w.reserve;
-  }
-}
-
-
-/* =========================================================
-   BOT AI — NO ACTUAR DESPUÉS DE FINALIZAR RONDA
-   ========================================================= */
-
-function updateBot(b, dt) {
-
-  if (!b.alive) return;
-
-  if (
-    !game.running ||
-    game.paused ||
-    game.roundPhase !== "live"
-  ) {
-    return;
-  }
-
-  const v = difficultyValues(b);
-
-  b.fireCd = Math.max(0, b.fireCd - dt);
-
-  if (b.reload > 0) {
-    b.reload -= dt;
-
-    if (b.reload <= 0) {
-      const w = WEAPONS[b.weapon];
-
-      b.mag = w.mag;
-      b.reserve = w.reserve;
-    }
-
-    return;
-  }
-
-  let target = nearestEnemy(b);
-
-  if (target && botVisible(b, target)) {
-    b.target = target;
-    b.lastSeen = 2;
-    b.state = "engage";
-  } else {
-    b.lastSeen -= dt;
-
-    if (b.lastSeen <= 0) {
-      b.target = null;
-      b.state = "patrol";
-    }
-  }
-
-  if (!b.target?.alive) {
-    b.target = null;
-  }
-
-  if (b.target) {
-
-    const t = b.target;
-    const d = dist(b, t);
-    const a = dirTo(b, t);
-
-    if (d > 7) {
-
-      moveEntity(
-        b,
-        Math.cos(a) * v.speed * dt,
-        Math.sin(a) * v.speed * dt,
-        .22
-      );
-
-    } else if (d < 4) {
-
-      moveEntity(
-        b,
-        -Math.cos(a) * v.speed * .55 * dt,
-        -Math.sin(a) * v.speed * .55 * dt,
-        .22
-      );
-
-    } else {
-
-      const side =
-        a + Math.PI / 2 * b.strafe;
-
-      moveEntity(
-        b,
-        Math.cos(side) * v.speed * .28 * dt,
-        Math.sin(side) * v.speed * .28 * dt,
-        .22
-      );
-
-      if (Math.random() < .01) {
-        b.strafe *= -1;
-      }
-    }
-
-    if (botVisible(b, t)) {
-      botShoot(b, t);
-    }
-
-  } else {
-
-    const d = Math.hypot(
-      b.x - b.patrolX,
-      b.y - b.patrolY
-    );
-
-    if (d < .5 || Math.random() < .002) {
-      const q = spawnPos(b.team);
-
-      b.patrolX = q.x;
-      b.patrolY = q.y;
-    }
-
-    const a = Math.atan2(
-      b.patrolY - b.y,
-      b.patrolX - b.x
-    );
-
-    moveEntity(
-      b,
-      Math.cos(a) * v.speed * .32 * dt,
-      Math.sin(a) * v.speed * .32 * dt,
-      .22
-    );
-  }
-}
-
-
-/* =========================================================
-   RENDER — LOS: LOS BOTS NO SE DIBUJAN A TRAVÉS DE PAREDES
-   ========================================================= */
-
-function entityVisibleFromPlayer(e) {
-
-  if (!game.player) return false;
-
-  return lineClear(
-    game.player.x,
-    game.player.y,
-    e.x,
-    e.y
-  );
-}
-
-
-function renderEntities() {
-
-  const arr = [];
-
-  for (const b of game.bots) {
-
-    if (!b.alive) continue;
-
-    /*
-      Nuevo: no mostramos enemigos detrás de paredes.
-    */
-    if (!entityVisibleFromPlayer(b)) continue;
-
-    const pr = project(
-      b.x,
-      b.y,
-      .9
-    );
-
-    if (pr) {
-      arr.push({
-        e: b,
-        p: pr
-      });
-    }
-  }
-
-  for (const x of game.pickups) {
-
-    if (!entityVisibleFromPlayer(x)) continue;
-
-    const pr = project(
-      x.x,
-      x.y,
-      .25
-    );
-
-    if (pr) {
-      arr.push({
-        e: x,
-        p: pr,
-        pick: true
-      });
-    }
-  }
-
-  arr.sort(
-    (a, b) => b.p.d - a.p.d
-  );
-
-  for (const o of arr) {
-
-    const b = o.e;
-    const p = o.p;
-
-    if (o.pick) {
-      drawPickup(p, b);
-      continue;
-    }
-
-    const h =
-      Math.min(
-        H * .75,
-        p.scale * 1.8
-      );
-
-    const w = h * .42;
-
-    ctx.globalAlpha =
-      Math.max(
-        .35,
-        1 - p.d / 30
-      );
-
-    ctx.fillStyle =
-      b.team === "blue"
-        ? "#3d91c9"
-        : "#cf4657";
-
-    ctx.fillRect(
-      p.x - w / 2,
-      p.y - h,
-      w,
-      h
-    );
-
-    ctx.fillStyle = "#202d34";
-
-    ctx.fillRect(
-      p.x - w * .7,
-      p.y - h * .08,
-      w * 1.4,
-      h * .18
-    );
-
-    ctx.fillStyle = "#c9d2d5";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      p.x,
-      p.y - h * 1.08,
-      w * .38,
-      0,
-      TAU
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle = "#0a1115";
-
-    ctx.fillRect(
-      p.x - w * .18,
-      p.y - h * .52,
-      w * .36,
-      h * .16
-    );
-
-    ctx.fillStyle = "#071016";
-
-    ctx.fillRect(
-      p.x - w * .42,
-      p.y - h * .45,
-      w * .84,
-      h * .08
-    );
-
-    ctx.globalAlpha = 1;
-  }
-}
-
-
-/* =========================================================
-   UPDATE — CONTROL DE RONDAS
-   ========================================================= */
-
-function update(dt) {
-
-  if (!game.running || game.paused) return;
-
-  if (game.roundPhase === "buy") {
-
-    game.buyTime -= dt;
-
-    if (game.buyTime <= 0) {
-      beginRound();
-    }
-
-  } else if (game.roundPhase === "live") {
-
-    if (game.mode !== "training") {
-
-      game.roundTime -= dt;
-
-      if (game.roundTime <= 0) {
-
-        const blue =
-          allAlive("blue").length;
-
-        const red =
-          allAlive("red").length;
-
-        endRound(
-          blue >= red
-            ? "blue"
-            : "red"
-        );
-
-        /*
-          Importantísimo:
-          no seguir actualizando bots después
-          de haber cerrado la ronda.
-        */
-        if (game.roundPhase !== "live") {
-          updateHUD();
-          return;
-        }
-      }
-    }
-
-    updatePlayer(dt);
-
-    /*
-      Si updatePlayer provocó alguna transición,
-      no seguir ejecutando IA.
-    */
-    if (game.roundPhase !== "live") {
-      updateHUD();
-      return;
-    }
-
-    for (const b of game.bots) {
-      updateBot(b, dt);
-    }
-
-    updateTraining(dt);
-
-    if (game.mode === "competitive") {
-
-      const blue =
-        allAlive("blue").length;
-
-      const red =
-        allAlive("red").length;
-
-      if (blue === 0) {
-        endRound("red");
-      } else if (red === 0) {
-        endRound("blue");
-      }
-    }
-  }
-
-  for (const x of game.tracers) {
-    x.t -= dt;
-  }
-
-  game.tracers =
-    game.tracers.filter(
-      x => x.t > 0
-    );
-
-  for (const x of game.particles) {
-    x.t -= dt;
-  }
-
-  game.particles =
-    game.particles.filter(
-      x => x.t > 0
-    );
-
-  for (const f of game.feed) {
-    f.time -= dt;
-  }
-
-  game.feed =
-    game.feed.filter(
-      x => x.time > 0
-    );
-
-  updateHUD();
-}
-
-
-/* =========================================================
-   TRAINING HUD
-   ========================================================= */
-
-function updateHUD() {
-
-  if (!game.player) return;
-
-  const p = game.player;
-
-  const w =
-    WEAPONS[p.weapon] ||
-    WEAPONS["KESTREL-C"];
-
-  $("#blueScore").textContent =
-    game.mode === "training"
-      ? "-"
-      : game.blue;
-
-  $("#redScore").textContent =
-    game.mode === "training"
-      ? "-"
-      : game.red;
-
-  const t =
-    game.roundPhase === "buy"
-      ? game.buyTime
-      : game.roundTime;
-
-  $("#roundTimer").textContent =
-    game.mode === "training"
-      ? "TRAIN"
-      : `${Math.max(
-          0,
-          Math.floor(t / 60)
-        ).toString().padStart(2, "0")}:${Math.max(
-          0,
-          Math.floor(t % 60)
-        ).toString().padStart(2, "0")}`;
-
-  $("#hp").textContent =
-    Math.max(
-      0,
-      Math.ceil(p.hp)
-    );
-
-  $("#hpbar").style.width =
-    Math.max(
-      0,
-      p.hp
-    ) + "%";
-
-  $("#armor").textContent =
-    Math.max(
-      0,
-      Math.ceil(p.armor)
-    );
-
-  $("#weaponName").textContent =
-    p.weapon;
-
-  $("#mag").textContent =
-    p.mag[p.weapon] ?? w.mag;
-
-  $("#reserve").textContent =
-    p.reserve[p.weapon] ?? w.reserve;
-
-  $("#hudMoney").textContent =
-    game.mode === "training"
-      ? "TRAINING"
-      : "$" + getProfile().stats.money;
-
-  const settings =
-    getProfile().settings;
-
-  $("#cross").style.display =
-    settings.cross ? "block" : "none";
-
-  $("#fps").style.display =
-    settings.fps ? "block" : "none";
-
-  $("#fps").textContent =
-    "FPS " + Math.round(game.fps);
-
-  $("#killfeed").innerHTML =
-    game.feed
-      .map(f =>
-        `<div class="feed">${f.text}</div>`
-      )
-      .join("");
-
-  if (game.roundPhase === "buy") {
-
-    $("#roundmsg").innerHTML =
-      `<h2>FASE DE COMPRA</h2>
-       <p>Comprá equipamiento • B para abrir/cerrar</p>`;
-
-  } else if (
-    game.roundPhase === "live" &&
-    !game.player.alive &&
-    game.mode === "competitive"
-  ) {
-
-    $("#roundmsg").innerHTML =
-      `<h2 style="color:var(--red)">ELIMINADO</h2>
-       <p>Esperando resolución de la ronda...</p>`;
-
-  } else if (game.mode === "training") {
-
-    const accuracy =
-      game.trainingShots
-        ? Math.round(
-            game.trainingHits /
-            game.trainingShots *
-            100
-          )
-        : 0;
-
-    $("#roundmsg").innerHTML =
-      `<p style="color:#7f9ca7">
-        KILLS ${game.trainingKills}
-        • PRECISIÓN ${accuracy}%
-      </p>`;
-  }
-
-  let near = false;
-
-  for (const x of game.pickups) {
-    if (
-      dist(game.player, x) < 1.5
-    ) {
-      near = true;
-      break;
-    }
-  }
-
-  $("#interact").style.display =
-    near ? "block" : "none";
-}
-
-
-/* =========================================================
-   REINICIO LIMPIO
-   ========================================================= */
-
-function hardResetGameState() {
-
-  game.running = false;
-  game.paused = false;
-
-  game.player = null;
-  game.bots = [];
-  game.pickups = [];
-  game.particles = [];
-  game.tracers = [];
-  game.feed = [];
-
-  game.roundPhase = "buy";
-  game.blue = 0;
-  game.red = 0;
-  game.round = 1;
-
-  game.shotTimer = 0;
-  game.reloadTimer = 0;
-  game.reloading = false;
-
-  game.yaw = 0;
-  game.pitch = 0;
-  game.z = 0;
-  game.vz = 0;
-
-  if (document.pointerLockElement) {
-    document.exitPointerLock();
-  }
-
-  $("#buy").style.display = "none";
-  $("#pause").style.display = "none";
-}
-
-
-/* ---------- SALIDA AL MENÚ ---------- */
-
-$("#exitBtn").onclick = () => {
-
-  hardResetGameState();
-
-  show("menu");
-  updateMenu();
-};
-
-
-/* ---------- RESULTADO ---------- */
-
-$("#resultMenu").onclick = () => {
-
-  hardResetGameState();
-
-  show("menu");
-  updateMenu();
-};
-
-
-/* =========================================================
-   FIX DE SELECTOR DE ARMAS
-   ========================================================= */
-
-function selectWeapon(i) {
-
-  const p = game.player;
-
-  if (!p || !p.alive) return;
-
-  const weapon =
-    p.inventory[i];
-
-  if (!weapon) return;
-
-  if (!WEAPONS[weapon]) return;
-
-  p.weapon = weapon;
-
-  game.reloading = false;
-  game.reloadTimer = 0;
-
-  updateHUD();
-}
-
-
-/* =========================================================
-   FIX DE RECARGA
-   ========================================================= */
-
-function reload() {
-
-  if (!isLiveGame()) return;
-  if (game.reloading) return;
-
-  const p = game.player;
-  const w = currentWeapon();
-
-  if (!w || w.type === "knife") return;
-
-  const mag =
-    p.mag[p.weapon] ?? w.mag;
-
-  const reserve =
-    p.reserve[p.weapon] ?? w.reserve;
-
-  if (mag >= w.mag) return;
-  if (reserve <= 0) return;
-
-  game.reloading = true;
-  game.reloadTimer = w.reload;
-
-  reloadSound();
-}
-
-function finishReload() {
-
-  const p = game.player;
-  const w = currentWeapon();
-
-  if (!w || w.type === "knife") {
-    game.reloading = false;
-    return;
-  }
-
-  const current =
-    p.mag[p.weapon] ?? 0;
-
-  const reserve =
-    p.reserve[p.weapon] ?? 0;
-
-  const needed =
-    w.mag - current;
-
-  const amount =
-    Math.min(
-      needed,
-      reserve
-    );
-
-  p.mag[p.weapon] =
-    current + amount;
-
-  p.reserve[p.weapon] =
-    reserve - amount;
-
-  game.reloading = false;
-
-  updateHUD();
-}
-
-
-/* =========================================================
-   FIX DE SHOOT
-   ========================================================= */
-
-function canShoot() {
-
-  return (
-    game.running &&
-    !game.paused &&
-    game.roundPhase === "live" &&
-    game.player &&
-    game.player.alive &&
-    !game.reloading &&
-    document.pointerLockElement === $("#view")
-  );
-}
-
-function shoot() {
-
-  if (!canShoot()) return;
-  if (game.shotTimer > 0) return;
-
-  const p = game.player;
-  const w = currentWeapon();
-
-  if (!w) return;
-
-  if (w.type === "knife") {
-    knifeAttack();
-    return;
-  }
-
-  const mag =
-    p.mag[p.weapon] ?? w.mag;
-
-  if (mag <= 0) {
-    reload();
-    return;
-  }
-
-  p.mag[p.weapon]--;
-
-  game.shotTimer =
-    60 / w.rate;
-
-  game.trainingShots++;
-
-  shotSound(w);
-  muzzle();
-
-  if (w.type === "shotgun") {
-
-    for (
-      let i = 0;
-      i < (w.pellets || 1);
-      i++
-    ) {
-      fireRay(
-        w,
-        randomSpread(w.spread),
-        true
-      );
-    }
-
-  } else {
-
-    fireRay(
-      w,
-      randomSpread(w.spread),
-      false
-    );
-  }
-
-  game.shake += w.recoil;
-
-  updateHUD();
-}
+// __JS__
 </script>
+</body>
+</html>
