@@ -1,1334 +1,1406 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>VECTOR//9 — Tactical FPS</title>
-<style>
-:root{
-  --bg:#070b10;--panel:#0d141b;--panel2:#111c25;--line:#243440;
-  --text:#e8f0f4;--muted:#82929d;--cyan:#32d7e8;--cyan2:#0da4b8;
-  --red:#ff5268;--green:#57e69b;--gold:#e6b85c;--blue:#4ca9ff;
-}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05080b;color:var(--text);
-font-family:Inter,Segoe UI,Arial,sans-serif}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.screen{position:absolute;inset:0;display:none}
-.screen.active{display:flex}
-#loading{align-items:center;justify-content:center;background:
-radial-gradient(circle at 50% 35%,#172630 0,#080d12 45%,#030507 100%)}
-.loadbox{width:min(620px,90vw);text-align:center}
-.brand{font-size:clamp(42px,8vw,82px);font-weight:900;letter-spacing:.12em;
-color:#eafcff;text-shadow:0 0 35px #22c9dc55}
-.brand span{color:var(--cyan)}
-.subbrand{color:#6e8792;letter-spacing:.35em;margin-top:4px}
-.progress{height:4px;background:#17252d;margin:42px 0 14px;overflow:hidden}
-.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan2),#8ff8ff);
-box-shadow:0 0 15px var(--cyan);transition:width .15s}
-.tip{font-size:12px;color:#6c7c86;min-height:20px}
-
-#auth{align-items:center;justify-content:center;background:
-linear-gradient(115deg,#05090d,#0a131a 50%,#071014)}
-.authgrid{width:min(1080px,94vw);display:grid;grid-template-columns:1.2fr .8fr;
-background:#091016dd;border:1px solid #24333d;box-shadow:0 30px 90px #0009}
-.authhero{padding:70px 55px;border-right:1px solid #22313a;
-background:linear-gradient(140deg,#0d1b22,#071017)}
-.authhero h1{font-size:56px;margin:0 0 12px;letter-spacing:.08em}
-.authhero h1 b{color:var(--cyan)}
-.authhero p{color:#81919a;line-height:1.7;max-width:480px}
-.tag{display:inline-block;color:var(--cyan);font-size:11px;letter-spacing:.25em;
-border:1px solid #1e7884;padding:7px 10px;margin-bottom:28px}
-.authpanel{padding:38px}
-.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:25px}
-.tab{flex:1;background:none;border:0;color:#71818c;padding:14px;text-transform:uppercase;letter-spacing:.16em}
-.tab.active{color:var(--cyan);border-bottom:2px solid var(--cyan)}
-.form{display:none}.form.active{display:block}
-label{display:block;color:#82939e;font-size:11px;text-transform:uppercase;letter-spacing:.15em;margin:18px 0 7px}
-input,select{width:100%;padding:13px 14px;background:#071017;border:1px solid #263741;color:#e9f4f7;
-outline:none;border-radius:2px}
-input:focus,select:focus{border-color:var(--cyan)}
-.primary,.secondary,.danger{width:100%;border:0;padding:14px;margin-top:22px;text-transform:uppercase;
-letter-spacing:.15em;font-weight:800}
-.primary{background:linear-gradient(90deg,#17aabb,#2bd3e1);color:#031015}
-.secondary{background:#15222b;color:#c7d7de;border:1px solid #30414b}
-.danger{background:#35141a;color:#ff8c9a;border:1px solid #6b2833}
-.error{min-height:20px;color:#ff6979;font-size:12px;margin-top:12px}
-.remember{display:flex;gap:9px;align-items:center;color:#778993;font-size:12px;margin-top:15px}
-.remember input{width:auto}
-
-#menu{background:
-radial-gradient(circle at 75% 30%,#16303a55,transparent 35%),
-linear-gradient(120deg,#05090d,#0b1319 55%,#05080b)}
-.menuwrap{width:100%;display:grid;grid-template-columns:280px 1fr}
-.sidebar{border-right:1px solid #1c2a33;background:#071016e8;padding:30px 22px;display:flex;flex-direction:column}
-.mini-logo{font-weight:900;letter-spacing:.18em;font-size:20px;margin-bottom:50px}.mini-logo b{color:var(--cyan)}
-.nav{display:flex;flex-direction:column;gap:5px}
-.nav button{background:none;border:0;color:#71818b;text-align:left;padding:15px 14px;letter-spacing:.12em;
-font-weight:700;font-size:12px}.nav button:hover,.nav button.sel{background:#10232b;color:#e9fbff}
-.usercard{margin-top:auto;border-top:1px solid var(--line);padding-top:18px}
-.usercard strong{display:block;font-size:18px}.usercard small{color:#6d7e88}
-.menucontent{padding:48px clamp(28px,6vw,90px);overflow:auto}
-.menucontent h2{font-size:36px;margin:0 0 8px}.eyebrow{color:var(--cyan);letter-spacing:.22em;font-size:11px}
-.hero{min-height:260px;border:1px solid #253841;background:
-linear-gradient(100deg,#0e2028dd,#0a1117aa),repeating-linear-gradient(135deg,#14232a 0 1px,transparent 1px 12px);
-padding:35px;display:flex;align-items:end;justify-content:space-between}
-.hero h1{font-size:54px;margin:5px 0}.hero p{color:#8797a0;max-width:560px}
-.playbtn{width:190px;padding:18px;background:var(--cyan);border:0;font-weight:900;letter-spacing:.15em;color:#041014}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
-.card{background:#0b151c;border:1px solid #22333c;padding:20px}.card h3{margin:0 0 10px}.card p{color:#72848e;font-size:13px;line-height:1.5}
-.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
-.stat{background:#0b151c;border:1px solid #203039;padding:18px}.stat small{color:#657780}.stat strong{display:block;font-size:27px;margin-top:5px}
-.menu-section{display:none}.menu-section.active{display:block}
-.inventory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
-.skin{border:1px solid #23343e;background:#0a141a;padding:18px;min-height:150px}
-.skin .gun{height:65px;background:linear-gradient(90deg,#263c46,#78929a,#18272f);clip-path:polygon(0 42%,68% 42%,75% 25%,100% 25%,100% 65%,72% 65%,67% 100%,56% 100%,61% 64%,0 64%)}
-.skin.gold .gun{background:linear-gradient(90deg,#5d4921,#e6be5d,#6c511e)}
-.skin.red .gun{background:linear-gradient(90deg,#491c26,#e04c61,#261016)}
-.skin.cyan .gun{background:linear-gradient(90deg,#0d4850,#42dbe8,#15323a)}
-.skin button{padding:8px 12px;margin-top:12px;background:#12232b;color:#d5e7eb;border:1px solid #29404b}
-.settings{max-width:650px}.range{display:grid;grid-template-columns:160px 1fr 55px;align-items:center;gap:15px;margin:20px 0}
-.range span:first-child{color:#84949e;font-size:12px;text-transform:uppercase}.range input{padding:0}.range output{color:var(--cyan)}
-.profilebox{background:#0b151c;border:1px solid #24343d;padding:28px;max-width:700px}
-.levelbar{height:8px;background:#16252d;margin:14px 0 25px}.levelbar i{display:block;height:100%;background:var(--cyan)}
-.profilegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.profilegrid div{background:#0a1116;padding:16px}.profilegrid small{color:#687b85}.profilegrid b{display:block;font-size:22px;margin-top:5px}
-
-#game{background:#000;cursor:crosshair}
-#view{position:absolute;inset:0;width:100%;height:100%;image-rendering:auto}
-#hud{position:absolute;inset:0;pointer-events:none}
-.topbar{position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(520px,70vw);
-background:#071017d9;border:1px solid #2a3c45;padding:8px 16px;display:flex;justify-content:center;gap:25px}
-.team{font-weight:900}.team.blue{color:#57adff}.team.red{color:#ff6375}
-.timer{color:#edf7fa;font-weight:900}
-.bottomleft{position:absolute;bottom:28px;left:28px;display:flex;align-items:end;gap:12px}
-.hpbox{background:#071017e8;border:1px solid #273a44;padding:13px 17px;min-width:170px}
-.hpnum{font-size:32px;font-weight:900}.bar{height:5px;background:#253038;margin-top:7px}.bar i{display:block;height:100%;background:#58e49c}
-.arm{color:#6fa9c5;font-size:12px;margin-top:6px}
-.weaponbox{position:absolute;bottom:28px;right:28px;text-align:right;background:#071017dc;border:1px solid #263943;padding:14px 18px}
-.weaponbox strong{font-size:20px}.ammo{font-size:28px;font-weight:900;color:#e9f5f7}.ammo span{color:#70818b;font-size:16px}
-.money{position:absolute;top:55px;right:25px;color:#e5c46a;font-weight:800}
-.cross{position:absolute;left:50%;top:50%;width:25px;height:25px;transform:translate(-50%,-50%)}
-.cross i,.cross:before,.cross:after{position:absolute;background:#e9ffff;content:"";box-shadow:0 0 3px #000}
-.cross i{width:3px;height:3px;left:11px;top:11px}.cross:before{width:2px;height:8px;left:11px;top:0}
-.cross:after{width:2px;height:8px;left:11px;bottom:0}
-.cross span:before,.cross span:after{content:"";position:absolute;background:#e9ffff;width:8px;height:2px;top:11px}
-.cross span:before{left:0}.cross span:after{right:0}
-.killfeed{position:absolute;top:85px;right:20px;display:flex;flex-direction:column;gap:5px;align-items:end}
-.feed{background:#081116dd;padding:6px 10px;border-right:2px solid var(--red);font-size:12px}
-.damage{position:absolute;left:50%;top:56%;transform:translateX(-50%);color:#ff6778;font-weight:900;
-font-size:16px;text-shadow:0 2px 5px #000;opacity:0}
-.damage.show{animation:hit .5s ease}
-@keyframes hit{0%{opacity:1;transform:translate(-50%,-10px)}100%{opacity:0;transform:translate(-50%,-40px)}}
-.interact{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);background:#071017dd;padding:8px 13px;
-border:1px solid #29414b;font-size:12px;display:none}
-.roundmsg{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);text-align:center;text-shadow:0 4px 20px #000}
-.roundmsg h2{font-size:48px;margin:0}.roundmsg p{color:#9babb3}
-#fps{position:absolute;left:10px;top:10px;color:#7c929c;font:11px monospace}
-#buy{position:absolute;inset:0;background:#060b0feF;display:none;padding:35px 5vw;overflow:auto}
-.buyhead{display:flex;justify-content:space-between;align-items:center}.buyhead h2{font-size:35px;margin:0}.buycash{color:#e8c66b;font-size:24px}
-.buygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:25px}
-.buyitem{background:#0c171e;border:1px solid #263942;padding:18px}.buyitem h3{margin:0}.buyitem p{color:#71828b;font-size:12px}.buyitem button{width:100%;padding:10px;background:#12252d;border:1px solid #2c4853;color:#dff8fb}
-.buyitem button:hover{background:#1a3c47}.closebuy{padding:11px 18px;background:var(--cyan);border:0;font-weight:900}
-
-#pause{position:absolute;inset:0;background:#03070bcc;display:none;align-items:center;justify-content:center}
-.pausebox{width:min(420px,90vw);background:#0b151c;border:1px solid #2a3c45;padding:30px}
-.pausebox h2{font-size:34px;margin:0 0 25px}.pausebox button{display:block;width:100%;padding:13px;margin:8px 0;background:#12232b;color:#dcebf0;border:1px solid #29404a}
-#result{align-items:center;justify-content:center;background:#05090d}
-.resultbox{width:min(700px,90vw);background:#0b151c;border:1px solid #2b3c45;padding:40px;text-align:center}
-.resultbox h1{font-size:55px;margin:0}.resultbox .win{color:var(--cyan)}.resultbox .lose{color:var(--red)}
-.resultstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:25px 0}.resultstats div{background:#081016;padding:15px}.resultstats b{display:block;font-size:25px}
-@media(max-width:800px){
- .authgrid{grid-template-columns:1fr}.authhero{display:none}.menuwrap{grid-template-columns:72px 1fr}.sidebar{padding:20px 10px}.mini-logo{font-size:12px}.nav button{font-size:0;text-align:center}.nav button:before{font-size:18px}.nav button:nth-child(1):before{content:"▶"}.nav button:nth-child(2):before{content:"◎"}.nav button:nth-child(3):before{content:"◆"}.nav button:nth-child(4):before{content:"●"}.nav button:nth-child(5):before{content:"⚙"}.nav button:nth-child(6):before{content:"↪"}.hero{display:block}.playbtn{margin-top:20px}.cards,.statgrid{grid-template-columns:1fr 1fr}.profilegrid{grid-template-columns:1fr 1fr}
-}
-</style>
-</head>
-<body>
-
-<section id="loading" class="screen active">
-  <div class="loadbox">
-    <div class="brand">VECTOR<span>//</span>9</div>
-    <div class="subbrand">TACTICAL RESPONSE DIVISION</div>
-    <div class="progress"><i id="loadbar"></i></div>
-    <div class="tip" id="loadtip">Inicializando sistema...</div>
-  </div>
-</section>
-
-<section id="auth" class="screen">
-  <div class="authgrid">
-    <div class="authhero">
-      <div class="tag">LOCAL OPERATIVE NETWORK</div>
-      <h1>VECTOR<b>//</b>9</h1>
-      <p>
-        Un FPS táctico original diseñado para funcionar completamente en el navegador.
-        Compite por rondas, administra recursos, domina el mapa <b>Distrito Meridian</b>
-        y supera a unidades controladas por IA.
-      </p>
-      <p style="color:#4d646e;font-size:11px">BUILD 1.0 • OFFLINE EDITION</p>
-    </div>
-    <div class="authpanel">
-      <div class="tabs">
-        <button class="tab active" data-tab="login">Ingresar</button>
-        <button class="tab" data-tab="register">Registrarse</button>
-      </div>
-
-      <form id="loginForm" class="form active">
-        <label>Nombre de usuario</label>
-        <input id="loginUser" autocomplete="username" maxlength="24">
-        <label>Contraseña</label>
-        <input id="loginPass" type="password" autocomplete="current-password">
-        <div class="remember"><input id="remember" type="checkbox"> Recordar sesión en este dispositivo</div>
-        <button class="primary">INICIAR SESIÓN</button>
-        <div class="error" id="loginError"></div>
-      </form>
-
-      <form id="registerForm" class="form">
-        <label>Nombre de usuario</label>
-        <input id="regUser" maxlength="24" autocomplete="username">
-        <label>Contraseña</label>
-        <input id="regPass" type="password" autocomplete="new-password">
-        <label>Confirmar contraseña</label>
-        <input id="regPass2" type="password" autocomplete="new-password">
-        <button class="primary">CREAR OPERATIVO</button>
-        <div class="error" id="regError"></div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<section id="menu" class="screen">
-  <div class="menuwrap">
-    <aside class="sidebar">
-      <div class="mini-logo">VECTOR<b>//</b>9</div>
-      <div class="nav">
-        <button class="sel" data-section="home">JUGAR</button>
-        <button data-section="training">ENTRENAMIENTO</button>
-        <button data-section="inventory">INVENTARIO</button>
-        <button data-section="profile">PERFIL</button>
-        <button data-section="settings">CONFIGURACIÓN</button>
-        <button id="logout">CERRAR SESIÓN</button>
-      </div>
-      <div class="usercard"><strong id="sideUser">OPERATIVO</strong><small id="sideLevel">NIVEL 1</small></div>
-    </aside>
-
-    <main class="menucontent">
-      <section id="sec-home" class="menu-section active">
-        <div class="eyebrow">OPERACIÓN ACTIVA</div>
-        <div class="hero">
-          <div>
-            <h1>DISTRITO<br>MERIDIAN</h1>
-            <p>Un complejo urbano industrial abandonado. Controlá los corredores, aprovechá las alturas y administrá tu economía entre rondas.</p>
-          </div>
-          <button class="playbtn" id="playBtn">JUGAR 5v5</button>
-        </div>
-        <div class="cards">
-          <div class="card"><h3>COMPETITIVO</h3><p>Rondas de eliminación 5 contra 5. Primera escuadra en alcanzar 6 victorias.</p></div>
-          <div class="card"><h3>ECONOMÍA</h3><p>Ganás créditos por eliminar rivales y por vencer rondas. Comprá antes del despliegue.</p></div>
-          <div class="card"><h3>IA ADAPTATIVA</h3><p>Unidades con dificultad Fácil, Normal y Difícil. Buscan, patrullan, persiguen y disparan.</p></div>
-        </div>
-        <div class="statgrid" id="quickStats"></div>
-      </section>
-
-      <section id="sec-training" class="menu-section">
-        <div class="eyebrow">CAMPO DE PRÁCTICA</div><h2>ENTRENAMIENTO</h2>
-        <div class="hero" style="min-height:220px">
-          <div><h1>RANGE // 04</h1><p>Dianas estáticas y unidades móviles. Practicá puntería sin presión de rondas.</p></div>
-          <button class="playbtn" id="trainingBtn">ENTRENAR</button>
-        </div>
-      </section>
-
-      <section id="sec-inventory" class="menu-section">
-        <div class="eyebrow">EQUIPAMIENTO</div><h2>INVENTARIO</h2>
-        <p style="color:#73858e">Cosméticos ficticios. No modifican estadísticas de combate.</p>
-        <div class="inventory-grid" id="inventoryGrid"></div>
-      </section>
-
-      <section id="sec-profile" class="menu-section">
-        <div class="eyebrow">REGISTRO OPERATIVO</div><h2>PERFIL</h2>
-        <div class="profilebox" id="profileBox"></div>
-      </section>
-
-      <section id="sec-settings" class="menu-section">
-        <div class="eyebrow">SISTEMA</div><h2>CONFIGURACIÓN</h2>
-        <div class="settings">
-          <div class="range"><span>Sensibilidad</span><input id="setSens" type="range" min=".5" max="3" step=".05"><output id="outSens"></output></div>
-          <div class="range"><span>Volumen</span><input id="setVol" type="range" min="0" max="1" step=".05"><output id="outVol"></output></div>
-          <div class="range"><span>Efectos</span><input id="setSfx" type="range" min="0" max="1" step=".05"><output id="outSfx"></output></div>
-          <div class="range"><span>FOV</span><input id="setFov" type="range" min="65" max="105" step="1"><output id="outFov"></output></div>
-          <label>Calidad gráfica</label>
-          <select id="setQuality"><option value="low">Baja</option><option value="medium">Media</option><option value="high">Alta</option></select>
-          <label class="remember"><input id="setFPS" type="checkbox"> Mostrar FPS</label>
-          <label class="remember"><input id="setCross" type="checkbox"> Mostrar crosshair</label>
-          <button class="primary" id="saveSettings">GUARDAR CONFIGURACIÓN</button>
-        </div>
-      </section>
-    </main>
-  </div>
-</section>
-
-<section id="game" class="screen">
-  <canvas id="view"></canvas>
-  <div id="hud">
-    <div class="topbar">
-      <span class="team blue">AZUL <b id="blueScore">0</b></span>
-      <span class="timer" id="roundTimer">--:--</span>
-      <span class="team red">ROJO <b id="redScore">0</b></span>
-    </div>
-    <div class="money" id="hudMoney">$0</div>
-    <div class="bottomleft">
-      <div class="hpbox"><div class="hpnum" id="hp">100</div><div class="bar"><i id="hpbar"></i></div><div class="arm">ARMADURA <b id="armor">0</b></div></div>
-    </div>
-    <div class="weaponbox"><strong id="weaponName">CARABINA KESTREL</strong><div class="ammo"><b id="mag">30</b> <span>/ <b id="reserve">90</b></span></div></div>
-    <div class="cross" id="cross"><i></i><span></span></div>
-    <div class="killfeed" id="killfeed"></div>
-    <div class="damage" id="damage"></div>
-    <div class="interact" id="interact">E — RECOGER ARMA</div>
-    <div class="roundmsg" id="roundmsg"></div>
-    <div id="fps">FPS --</div>
-  </div>
-
-  <div id="buy">
-    <div class="buyhead"><div><div class="eyebrow">FASE DE PREPARACIÓN</div><h2>ARSENAL</h2></div><div class="buycash" id="buyCash">$0</div><button class="closebuy" id="closeBuy">CERRAR [B]</button></div>
-    <div class="buygrid" id="buyGrid"></div>
-  </div>
-
-  <div id="pause">
-    <div class="pausebox">
-      <div class="eyebrow">SISTEMA PAUSADO</div><h2>PAUSA</h2>
-      <button id="resumeBtn">CONTINUAR</button>
-      <button id="pauseSettings">CONFIGURACIÓN</button>
-      <button id="restartBtn">REINICIAR PARTIDA</button>
-      <button id="exitBtn">SALIR AL MENÚ</button>
-    </div>
-  </div>
-</section>
-
-<section id="result" class="screen">
-  <div class="resultbox">
-    <div class="eyebrow">OPERACIÓN FINALIZADA</div>
-    <h1 id="resultTitle">VICTORIA</h1>
-    <p id="resultDesc"></p>
-    <div class="resultstats" id="resultStats"></div>
-    <button class="primary" id="resultMenu">VOLVER AL MENÚ</button>
-  </div>
-</section>
-
 <script>
 "use strict";
 
+/* =========================================================
+   VECTOR//9 — FIX PACK 1.1
+   ========================================================= */
+
+/* ---------- ESTADO SEGURO ---------- */
+
+function isGameActive() {
+  return game.running && !game.paused && game.player;
+}
+
+function isLiveGame() {
+  return isGameActive() &&
+         game.roundPhase === "live" &&
+         game.player.alive;
+}
+
+
+/* ---------- POINTER LOCK ---------- */
+
 /*
- VECTOR//9 — juego completamente local.
-
- IMPORTANTE SOBRE SEGURIDAD:
- Este sistema de cuentas existe solamente para una aplicación local/offline.
- La contraseña se almacena como SHA-256(password + salt) usando Web Crypto API,
- no como texto plano. Esto mejora la protección frente a una lectura casual de
- localStorage, pero NO convierte el sistema en autenticación segura para un
- juego online real: no existe servidor, control de sesiones remoto ni backend.
- Para producción habría que utilizar un servidor, TLS, gestión de sesiones y
- un KDF apropiado como Argon2id/scrypt/PBKDF2 con parámetros adecuados.
+  No asumimos que requestPointerLock() devuelve Promise.
+  Algunos navegadores todavía utilizan la versión clásica de la API.
 */
+function requestPointer() {
+  const c = $("#view");
 
-const $=s=>document.querySelector(s);
-const $$=s=>[...document.querySelectorAll(s)];
-const TAU=Math.PI*2;
+  if (!c || !game.running || game.paused) return;
 
-const DEFAULT_SETTINGS={
-  sens:1.25,vol:.55,sfx:.7,fov:82,quality:"medium",fps:false,cross:true
-};
+  if (document.pointerLockElement === c) return;
 
-const WEAPONS={
-  "PULSAR-9":{
-    type:"pistol",price:350,damage:30,rate:420,mag:15,reserve:60,reload:1.35,
-    recoil:.035,spread:.012,range:28,body:1,head:2.15,limb:.72,color:"#8da9b3"
-  },
-  "KESTREL-C":{
-    type:"rifle",price:2450,damage:34,rate:680,mag:30,reserve:90,reload:2.05,
-    recoil:.055,spread:.018,range:48,body:1,head:2.25,limb:.65,color:"#4ec6d2"
-  },
-  "VANTA-45":{
-    type:"smg",price:1250,damage:24,rate:850,mag:32,reserve:96,reload:1.65,
-    recoil:.07,spread:.035,range:27,body:1,head:1.9,limb:.68,color:"#9b75d9"
-  },
-  "BRINK-12":{
-    type:"shotgun",price:1850,damage:16,rate:75,mag:8,reserve:32,reload:2.2,
-    recoil:.16,spread:.085,range:16,body:1,head:1.7,limb:.7,pellets:8,color:"#b78d60"
-  },
-  "ORBIT-6":{
-    type:"sniper",price:4200,damage:105,rate:55,mag:5,reserve:20,reload:2.8,
-    recoil:.13,spread:.004,range:70,body:1,head:2.6,limb:.7,color:"#7fa4b9"
-  },
-  "EDGE-KNIFE":{
-    type:"knife",price:0,damage:70,rate:260,mag:1,reserve:0,reload:0,
-    recoil:0,spread:0,range:2.2,body:1,head:1.2,limb:.8,color:"#d8e3e7"
+  if (!c.requestPointerLock) {
+    $("#roundmsg").innerHTML =
+      "<h2>MOUSE NO DISPONIBLE</h2>" +
+      "<p>Tu navegador no permite Pointer Lock. Hacé clic nuevamente sobre el juego.</p>";
+    return;
+  }
+
+  try {
+    const result = c.requestPointerLock({
+      unadjustedMovement: true
+    });
+
+    /*
+      Si el navegador soporta Promise y falla por
+      unadjustedMovement, hacemos fallback al modo normal.
+    */
+    if (result && typeof result.catch === "function") {
+      result.catch(() => {
+        try {
+          const fallback = c.requestPointerLock();
+
+          if (fallback && typeof fallback.catch === "function") {
+            fallback.catch(() => {
+              showPointerLockError();
+            });
+          }
+        } catch (err) {
+          showPointerLockError();
+        }
+      });
+    }
+  } catch (err) {
+    try {
+      c.requestPointerLock();
+    } catch (_) {
+      showPointerLockError();
+    }
+  }
+}
+
+function showPointerLockError() {
+  if (!game.running) return;
+
+  $("#roundmsg").innerHTML =
+    "<h2>HACÉ CLIC PARA JUGAR</h2>" +
+    "<p>El navegador bloqueó temporalmente el control del mouse.</p>";
+}
+
+document.addEventListener("pointerlockchange", () => {
+  const locked = document.pointerLockElement === $("#view");
+
+  if (!game.running) return;
+
+  /*
+    Si el usuario salió manualmente del pointer lock,
+    pausamos solamente durante una partida viva.
+  */
+  if (!locked && !game.paused && game.roundPhase === "live") {
+    game.paused = true;
+    $("#pause").style.display = "flex";
+  }
+});
+
+document.addEventListener("pointerlockerror", () => {
+  showPointerLockError();
+});
+
+$("#view").onclick = () => {
+  if (game.running && !game.paused) {
+    requestPointer();
   }
 };
 
-const SKINS=[
- {id:"standard",name:"Graphite Standard",cls:"",color:"#8c9aa0"},
- {id:"cyan",name:"Ion Cyan",cls:"cyan",color:"#32d7e8"},
- {id:"gold",name:"Solar Brass",cls:"gold",color:"#e6b85c"},
- {id:"red",name:"Ember Signal",cls:"red",color:"#ff5268"}
-];
-
-const MAP=[
-"########################",
-"#..........#...........#",
-"#..........#...........#",
-"#..####....#....####...#",
-"#..#..#....#....#..#...#",
-"#..#..#....#....#..#...#",
-"#..####....#....####...#",
-"#......................#",
-"####..############..####",
-"#......................#",
-"#....######..######....#",
-"#....#............#....#",
-"#....#............#....#",
-"#....######..######....#",
-"#......................#",
-"####..############..####",
-"#......................#",
-"#...####.....####......#",
-"#...#..#.....#..#......#",
-"#...#..#.....#..#......#",
-"#...####.....####......#",
-"#......................#",
-"#......................#",
-"########################"
-];
-const MW=MAP[0].length,MH=MAP.length;
-
-const SPAWNS={
- blue:[{x:2.5,y:2.5},{x:3.5,y:3.5},{x:2.5,y:6.5},{x:5.5,y:2.5},{x:5.5,y:6.5}],
- red:[{x:20.5,y:21.5},{x:19.5,y:20.5},{x:21.5,y:18.5},{x:17.5,y:21.5},{x:20.5,y:17.5}]
-};
-
-const game={
- state:"menu",mode:"competitive",running:false,paused:false,
- player:null,bots:[],pickups:[],particles:[],tracers:[],feed:[],
- blue:0,red:0,round:1,roundTime:0,buyTime:0,roundPhase:"buy",
- winner:null,shotTimer:0,reloadTimer:0,reloading:false,
- yaw:0,pitch:0,z:0,vz:0,ground:true,crouch:false,sprint:false,
- last:performance.now(),fps:0,fpsFrames:0,fpsTime:performance.now(),
- trainingKills:0,trainingStart:0,trainingShots:0,trainingHits:0,
- audio:null,shake:0
-};
-
-const keys={};
-const mouse={left:false,right:false};
-
-let currentUser=null;
-let saveTimer=null;
-
-/* ---------- STORAGE / AUTH ---------- */
-function db(){try{return JSON.parse(localStorage.getItem("vector9_users")||"{}")}catch(e){return {}}}
-function saveDB(d){localStorage.setItem("vector9_users",JSON.stringify(d))}
-function getProfile(){
- const d=db(), u=d[currentUser];
- if(!u)return null;
- if(!u.stats)u.stats={level:1,xp:0,wins:0,losses:0,kills:0,deaths:0,money:3000};
- if(!u.settings)u.settings={...DEFAULT_SETTINGS};
- if(!u.inventory)u.inventory=["standard"];
- if(!u.equippedSkin)u.equippedSkin="standard";
- return u;
-}
-function saveProfile(){if(!currentUser)return;const d=db();d[currentUser]=getProfile();saveDB(d)}
-function bytesHex(a){return [...new Uint8Array(a)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-async function hashPassword(password,salt){
- const data=new TextEncoder().encode(password+"::VECTOR9::"+salt);
- if(window.crypto?.subtle){
-   return bytesHex(await crypto.subtle.digest("SHA-256",data));
- }
- let h=2166136261;
- for(const c of password+salt){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}
- return (h>>>0).toString(16).padStart(8,"0");
-}
-function newSalt(){
- if(window.crypto?.getRandomValues){
-   const a=new Uint32Array(4);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16)).join("");
- }
- return Math.random().toString(36)+Date.now();
-}
-async function register(){
- const user=$("#regUser").value.trim(),p=$("#regPass").value,p2=$("#regPass2").value;
- const err=$("#regError");err.textContent="";
- if(!user)return err.textContent="El nombre de usuario es obligatorio.";
- if(!/^[a-zA-Z0-9_-]{3,24}$/.test(user))return err.textContent="Usá 3–24 caracteres: letras, números, _ o -.";
- if(p.length<8)return err.textContent="La contraseña debe tener al menos 8 caracteres.";
- if(p!==p2)return err.textContent="Las contraseñas no coinciden.";
- const d=db();
- if(d[user])return err.textContent="Ese usuario ya existe.";
- const salt=newSalt(),hash=await hashPassword(p,salt);
- d[user]={
-   hash,salt,
-   stats:{level:1,xp:0,wins:0,losses:0,kills:0,deaths:0,money:3000},
-   settings:{...DEFAULT_SETTINGS},
-   inventory:["standard"],equippedSkin:"standard"
- };
- saveDB(d);
- $("#regUser").value="";$("#regPass").value="";$("#regPass2").value="";
- showTab("login");$("#loginUser").value=user;
- $("#loginError").style.color="var(--green)";$("#loginError").textContent="Cuenta creada. Ya podés iniciar sesión.";
-}
-async function login(){
- const user=$("#loginUser").value.trim(),p=$("#loginPass").value,err=$("#loginError");
- err.style.color="";err.textContent="";
- const d=db();
- if(!d[user])return err.textContent="Usuario o contraseña incorrectos.";
- const hash=await hashPassword(p,d[user].salt);
- if(hash!==d[user].hash)return err.textContent="Usuario o contraseña incorrectos.";
- currentUser=user;
- if($("#remember").checked)localStorage.setItem("vector9_session",user);
- else sessionStorage.setItem("vector9_session",user);
- enterMenu();
-}
-function logout(){
- currentUser=null;localStorage.removeItem("vector9_session");sessionStorage.removeItem("vector9_session");
- show("auth");$("#loginPass").value="";
-}
-function show(id){
- $$(".screen").forEach(x=>x.classList.remove("active"));
- $("#"+id).classList.add("active");
-}
-function showTab(name){
- $$(".tab").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));
- $$(".form").forEach(x=>x.classList.toggle("active",x.id===name+"Form"));
-}
-function enterMenu(){getProfile();show("menu");updateMenu()}
-
-/* ---------- MENU ---------- */
-function updateMenu(){
- const p=getProfile(),s=p.stats;
- $("#sideUser").textContent=currentUser.toUpperCase();
- $("#sideLevel").textContent="NIVEL "+s.level+" • "+s.xp+" XP";
- $("#quickStats").innerHTML=[
-   ["VICTORIAS",s.wins],["DERROTAS",s.losses],["KILLS",s.kills],["K/D",(s.deaths?(s.kills/s.deaths).toFixed(2):s.kills.toFixed(2))]
- ].map(x=>`<div class="stat"><small>${x[0]}</small><strong>${x[1]}</strong></div>`).join("");
- renderProfile();renderInventory();renderSettings();
-}
-function renderProfile(){
- const p=getProfile(),s=p.stats,next=s.level*500,prog=Math.min(100,s.xp/next*100);
- $("#profileBox").innerHTML=`
- <h2 style="margin:0">${currentUser}</h2>
- <div style="color:#6e838e">OPERATIVO DE CAMPO</div>
- <div style="margin-top:20px">NIVEL ${s.level} — ${s.xp}/${next} XP</div>
- <div class="levelbar"><i style="width:${prog}%"></i></div>
- <div class="profilegrid">
-  <div><small>VICTORIAS</small><b>${s.wins}</b></div>
-  <div><small>DERROTAS</small><b>${s.losses}</b></div>
-  <div><small>KILLS</small><b>${s.kills}</b></div>
-  <div><small>DEATHS</small><b>${s.deaths}</b></div>
-  <div><small>K/D</small><b>${s.deaths?(s.kills/s.deaths).toFixed(2):s.kills.toFixed(2)}</b></div>
-  <div><small>CRÉDITOS</small><b>$${s.money}</b></div>
- </div>`;
-}
-function renderInventory(){
- const p=getProfile();
- $("#inventoryGrid").innerHTML=SKINS.map(sk=>`
- <div class="skin ${sk.cls}">
-   <div class="gun"></div>
-   <h3>${sk.name}</h3>
-   <small style="color:${sk.color}">${p.equippedSkin===sk.id?"EQUIPADA":"COSMÉTICA"}</small><br>
-   <button onclick="equipSkin('${sk.id}')">${p.equippedSkin===sk.id?"EQUIPADA":"EQUIPAR"}</button>
- </div>`).join("");
-}
-function equipSkin(id){
- const p=getProfile();
- if(!p.inventory.includes(id))p.inventory.push(id);
- p.equippedSkin=id;saveProfile();renderInventory();
-}
-function renderSettings(){
- const s=getProfile().settings;
- $("#setSens").value=s.sens;$("#setVol").value=s.vol;$("#setSfx").value=s.sfx;$("#setFov").value=s.fov;
- $("#setQuality").value=s.quality;$("#setFPS").checked=s.fps;$("#setCross").checked=s.cross;
- updateSettingOutputs();
-}
-function updateSettingOutputs(){
- $("#outSens").textContent=(+$("#setSens").value).toFixed(2);
- $("#outVol").textContent=Math.round(+$("#setVol").value*100)+"%";
- $("#outSfx").textContent=Math.round(+$("#setSfx").value*100)+"%";
- $("#outFov").textContent=$("#setFov").value+"°";
-}
-function saveSettings(){
- const p=getProfile();
- p.settings={
-   sens:+$("#setSens").value,vol:+$("#setVol").value,sfx:+$("#setSfx").value,
-   fov:+$("#setFov").value,quality:$("#setQuality").value,
-   fps:$("#setFPS").checked,cross:$("#setCross").checked
- };
- saveProfile();updateSettingOutputs();
- $("#saveSettings").textContent="GUARDADO";
- setTimeout(()=>$("#saveSettings").textContent="GUARDAR CONFIGURACIÓN",900);
-}
-$$(".nav button[data-section]").forEach(b=>b.onclick=()=>{
- $$(".nav button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
- $$(".menu-section").forEach(x=>x.classList.remove("active"));
- $("#sec-"+b.dataset.section).classList.add("active");
-});
-$$(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-$("#registerForm").onsubmit=e=>{e.preventDefault();register()};
-$("#loginForm").onsubmit=e=>{e.preventDefault();login()};
-$("#logout").onclick=logout;
-$("#setSens").oninput=updateSettingOutputs;$("#setVol").oninput=updateSettingOutputs;
-$("#setSfx").oninput=updateSettingOutputs;$("#setFov").oninput=updateSettingOutputs;
-$("#saveSettings").onclick=saveSettings;
-
-/* ---------- LOADING ---------- */
-const tips=[
- "CONSEJO — Las esquinas son más importantes que la velocidad.",
- "CONSEJO — Comprá armadura cuando tu economía lo permita.",
- "CONSEJO — El ruido de una recarga puede revelar tu posición.",
- "CONSEJO — Agacharte reduce tu perfil y tu velocidad.",
- "CONSEJO — Los bots difíciles reaccionan más rápido a la línea de visión.",
- "CONSEJO — Usá SHIFT para moverte rápidamente, pero exponete más."
-];
-let load=0;
-const loadInt=setInterval(()=>{
- load+=Math.random()*15+5;if(load>100)load=100;
- $("#loadbar").style.width=load+"%";
- $("#loadtip").textContent=tips[Math.floor(Math.random()*tips.length)];
- if(load>=100){
-  clearInterval(loadInt);
-  const remembered=localStorage.getItem("vector9_session")||sessionStorage.getItem("vector9_session");
-  setTimeout(()=>{
-   if(remembered&&db()[remembered]){currentUser=remembered;enterMenu()}
-   else show("auth");
-  },450);
- }
-},140);
-
-/* ---------- AUDIO ---------- */
-function audioInit(){
- if(!game.audio){
-   try{
-    const AC=window.AudioContext||window.webkitAudioContext;
-    if(AC)game.audio=new AC();
-   }catch(e){}
- }
- if(game.audio?.state==="suspended")game.audio.resume();
-}
-function tone(freq,duration=.06,type="square",gain=.04){
- const a=game.audio;if(!a)return;
- const s=getProfile()?.settings||DEFAULT_SETTINGS;
- const o=a.createOscillator(),g=a.createGain();
- o.type=type;o.frequency.value=freq;g.gain.value=gain*s.sfx;
- o.connect(g);g.connect(a.destination);o.start();
- g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+duration);
- o.stop(a.currentTime+duration);
-}
-function shotSound(w){
- if(w.type==="shotgun"){tone(90,.12,"sawtooth",.13);tone(170,.07,"square",.05)}
- else if(w.type==="sniper"){tone(70,.14,"sawtooth",.12)}
- else tone(w.type==="pistol"?230:150,.055,"square",.07);
-}
-function hitSound(){tone(900,.045,"triangle",.045)}
-function reloadSound(){tone(330,.05,"square",.035);setTimeout(()=>tone(220,.07,"square",.035),120)}
-
-/* ---------- MAP / PHYSICS ---------- */
-function wall(x,y){
- const gx=Math.floor(x),gy=Math.floor(y);
- return gy<0||gy>=MH||gx<0||gx>=MW||MAP[gy][gx]==="#";
-}
-function solid(x,y,r=.2){
- return wall(x-r,y-r)||wall(x+r,y-r)||wall(x-r,y+r)||wall(x+r,y+r);
-}
-function moveEntity(e,dx,dy,r=.2){
- let nx=e.x+dx;
- if(!solid(nx,e.y,r))e.x=nx;
- let ny=e.y+dy;
- if(!solid(e.x,ny,r))e.y=ny;
-}
-function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
-function angleDiff(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b))}
-function dirTo(a,b){return Math.atan2(b.y-a.y,b.x-a.x)}
-function lineClear(x1,y1,x2,y2){
- const d=Math.hypot(x2-x1,y2-y1),n=Math.ceil(d*8);
- for(let i=1;i<n;i++){
-  const t=i/n;if(wall(x1+(x2-x1)*t,y1+(y2-y1)*t))return false;
- }
- return true;
-}
-function castWall(x,y,a,max=80){
- const dx=Math.cos(a),dy=Math.sin(a);
- let d=0;
- while(d<max){
-  d+=.035;
-  if(wall(x+dx*d,y+dy*d))return d;
- }
- return max;
-}
-function spawnPos(team){
- const arr=SPAWNS[team];
- const s=arr[Math.floor(Math.random()*arr.length)];
- return {x:s.x,y:s.y};
-}
-
-/* ---------- ENTITIES ---------- */
-function makePlayer(){
- const s=spawnPos("blue");
- return {
-  kind:"player",team:"blue",x:s.x,y:s.y,z:0,hp:100,armor:0,alive:true,
-  weapon:"KESTREL-C",inventory:["PULSAR-9","KESTREL-C","EDGE-KNIFE"],
-  mag:{},reserve:{},kills:0,deaths:0
- };
-}
-function makeBot(team,i,difficulty){
- const s=spawnPos(team);
- const weapons=team==="red"
-   ? ["KESTREL-C","VANTA-45","PULSAR-9","ORBIT-6","BRINK-12"]
-   : ["KESTREL-C","VANTA-45","PULSAR-9"];
- const w=weapons[i%weapons.length];
- return {
-  kind:"bot",id:team+"_"+i,team,x:s.x,y:s.y,z:0,hp:100,armor:Math.random()<.5?35:0,
-  alive:true,weapon:w,mag:WEAPONS[w].mag,reserve:WEAPONS[w].reserve,
-  ai:difficulty,think:Math.random(),target:null,state:"patrol",lastSeen:0,
-  patrolX:s.x,patrolY:s.y,fireCd:0,reload:0,strafe:Math.random()<.5?1:-1,
-  kills:0,deaths:0
- };
-}
-function resetWeaponAmmo(p,w){
- const d=WEAPONS[w];
- p.mag[w]=d.mag;p.reserve[w]=d.reserve;
-}
-function initInventoryAmmo(){
- const p=game.player;
- for(const w of p.inventory)resetWeaponAmmo(p,w);
-}
-function allAlive(team){return [...game.bots.filter(b=>b.team===team&&b.alive),(team==="blue"&&game.player.alive?game.player:null)].filter(Boolean)}
-function enemyOf(team){return team==="blue"?"red":"blue"}
-function getEnemies(team){return team==="blue"?game.bots.filter(b=>b.team==="red"&&b.alive):[
- ...(game.player.alive?[game.player]:[]),...game.bots.filter(b=>b.team==="blue"&&b.alive)
-]}
-function addFeed(killer,victim,head=false){
- game.feed.unshift({text:`${killer}  ${head?"◉":"▸"}  ${victim}`,time:2.8});
- if(game.feed.length>5)game.feed.pop();
-}
-function killEntity(victim,killer,head=false){
- if(!victim.alive)return;
- victim.alive=false;victim.hp=0;victim.deaths++;
- if(killer){killer.kills=(killer.kills||0)+1}
- addFeed(killer?.kind==="player"?"TÚ":(killer?.team==="blue"?"ALIADO":"ENEMIGO"),
-         victim.kind==="player"?"TÚ":(victim.team==="blue"?"ALIADO":"ENEMIGO"),head);
- tone(head?1100:700,.09,"triangle",.06);
- if(victim.kind==="player"){
-   getProfile().stats.deaths++;
-   saveProfile();
-   game.roundmsg.innerHTML="";
-   game.player.alive=false;
- }else{
-   if(victim.team==="red"&&killer?.kind==="player"){
-     const p=getProfile();p.stats.kills++;p.stats.money+=300;saveProfile();
-   }
- }
-}
-
-/* ---------- ROUND ---------- */
-function startMatch(mode="competitive"){
- audioInit();
- game.mode=mode;game.running=true;game.paused=false;game.blue=0;game.red=0;game.round=1;
- game.player=makePlayer();initInventoryAmmo();
- game.bots=[];
- const diff=mode==="training"?"easy":"normal";
- for(let i=0;i<4;i++)game.bots.push(makeBot("blue",i,diff));
- for(let i=0;i<5;i++)game.bots.push(makeBot("red",i,mode==="training"?"easy":i<2?"easy":i<4?"normal":"hard"));
- game.pickups=[];game.particles=[];game.tracers=[];game.feed=[];
- game.roundPhase="buy";game.buyTime=15;game.roundTime=120;game.roundmsg=$("#roundmsg");
- game.trainingKills=0;game.trainingShots=0;game.trainingHits=0;game.trainingStart=performance.now();
- show("game");$("#buy").style.display=mode==="training"?"none":"block";
- $("#pause").style.display="none";
- updateHUD();renderBuy();
- requestPointer();
-}
-function beginRound(){
- if(!game.running)return;
- const p=game.player;
- p.alive=true;p.hp=100;p.armor=game.mode==="training"?0:p.armor;
- let s=spawnPos("blue");p.x=s.x;p.y=s.y;game.z=0;game.vz=0;
- p.weapon=p.inventory.includes("KESTREL-C")?"KESTREL-C":p.inventory[0];
- for(const b of game.bots){
-   b.alive=true;b.hp=100;b.reload=0;b.fireCd=0;
-   const sp=spawnPos(b.team);b.x=sp.x;b.y=sp.y;
-   const w=WEAPONS[b.weapon];b.mag=w.mag;b.reserve=w.reserve;b.target=null;
- }
- game.roundPhase="live";game.roundTime=game.mode==="training"?999:120;
- game.roundmsg.innerHTML="";
- $("#buy").style.display="none";
-}
-function startNextRound(){
- game.round++;
- game.player.alive=true;
- game.roundPhase="buy";game.buyTime=15;
- game.player.hp=100;game.player.armor=0;
- if(game.mode==="competitive"){
-   game.player.inventory=[...new Set([...game.player.inventory,"PULSAR-9","EDGE-KNIFE"])];
-   game.player.weapon=game.player.inventory.includes("KESTREL-C")?"KESTREL-C":"PULSAR-9";
- }
- $("#buy").style.display="block";renderBuy();
-}
-function endRound(team){
- if(game.roundPhase==="end")return;
- game.roundPhase="end";
- if(team==="blue"){game.blue++;game.player.alive=true}
- else game.red++;
- const won=team==="blue";
- const p=getProfile();
- p.stats.xp+=won?150:70;
- if(p.stats.xp>=p.stats.level*500){
-   p.stats.xp-=p.stats.level*500;p.stats.level++;
- }
- if(won){p.stats.wins++;p.stats.money+=1900}else{p.stats.losses++;p.stats.money+=1200}
- saveProfile();
- game.roundmsg.innerHTML=`<h2 style="color:${won?"var(--cyan)":"var(--red)"}">${won?"RONDA GANADA":"RONDA PERDIDA"}</h2><p>${won?"La escuadra azul mantiene el sector.":"El sector cayó bajo control rojo."}</p>`;
- setTimeout(()=>{
-   if(game.blue>=6||game.red>=6){
-     finishMatch(game.blue>=6);return;
-   }
-   startNextRound();
- },2200);
-}
-function finishMatch(won){
- game.running=false;
- if(document.pointerLockElement)document.exitPointerLock();
- $("#buy").style.display="none";$("#pause").style.display="none";
- const p=getProfile(),s=p.stats;
- $("#resultTitle").textContent=won?"VICTORIA":"DERROTA";
- $("#resultTitle").className=won?"win":"lose";
- $("#resultDesc").textContent=`Marcador final: AZUL ${game.blue} — ${game.red} ROJO`;
- $("#resultStats").innerHTML=[
-   ["KILLS",s.kills],["DEATHS",s.deaths],["K/D",s.deaths?(s.kills/s.deaths).toFixed(2):s.kills],["XP",s.xp]
- ].map(x=>`<div><small>${x[0]}</small><b>${x[1]}</b></div>`).join("");
- show("result");updateMenu();
-}
-$("#resultMenu").onclick=()=>{show("menu");updateMenu()};
-
-/* ---------- BUY ---------- */
-function renderBuy(){
- const p=game.player;if(!p)return;
- $("#buyCash").textContent="$"+getProfile().stats.money;
- const names=Object.keys(WEAPONS).filter(x=>x!=="EDGE-KNIFE");
- $("#buyGrid").innerHTML=names.map(n=>{
-  const w=WEAPONS[n],owned=p.inventory.includes(n);
-  return `<div class="buyitem"><h3>${n}</h3><p>${w.type.toUpperCase()} • ${w.damage} DMG • ${w.mag} MAG • ${Math.round(w.rate)} RPM</p>
-  <strong style="color:#e4c66d">$${w.price}</strong>
-  <button onclick="buyWeapon('${n}')">${owned?"COMPRAR / REABASTECER":"COMPRAR"}</button></div>`
- }).join("")+`
- <div class="buyitem"><h3>PLACA FLEX-30</h3><p>Reduce parte del daño recibido.</p><strong style="color:#e4c66d">$650</strong>
- <button onclick="buyArmor()">COMPRAR ARMADURA</button></div>`;
-}
-function buyWeapon(name){
- if(game.roundPhase!=="buy")return;
- const p=game.player,w=WEAPONS[name],prof=getProfile();
- if(prof.stats.money<w.price&&!p.inventory.includes(name))return;
- if(!p.inventory.includes(name)){
-  prof.stats.money-=w.price;p.inventory.push(name);p.mag[name]=w.mag;p.reserve[name]=w.reserve;
- }else{
-  const cost=Math.min(w.price*.25,250);
-  if(prof.stats.money>=cost){prof.stats.money-=cost;p.mag[name]=w.mag;p.reserve[name]=w.reserve}
- }
- p.weapon=name;saveProfile();renderBuy();updateHUD();
-}
-function buyArmor(){
- const prof=getProfile(),p=game.player;
- if(p.armor>=100)return;
- if(prof.stats.money>=650){prof.stats.money-=650;p.armor=100;saveProfile();renderBuy();updateHUD()}
-}
-$("#closeBuy").onclick=()=>{if(game.roundPhase==="buy"){beginRound()}};
-$("#playBtn").onclick=()=>startMatch("competitive");
-$("#trainingBtn").onclick=()=>startMatch("training");
 
 /* ---------- INPUT ---------- */
-document.addEventListener("keydown",e=>{
- keys[e.code]=true;
- if(e.code==="Escape"&&game.running){
-   if($("#buy").style.display==="block")return;
-   game.paused=!game.paused;
-   $("#pause").style.display=game.paused?"flex":"none";
-   if(game.paused&&document.pointerLockElement)document.exitPointerLock();
-   if(!game.paused)requestPointer();
- }
- if(e.code==="KeyB"&&game.running&&game.roundPhase==="buy"){
-   $("#buy").style.display=$("#buy").style.display==="block"?"none":"block";
- }
- if(e.code==="KeyR"&&game.running&&!game.paused)reload();
- if(e.code==="Digit1"&&game.running)selectWeapon(0);
- if(e.code==="Digit2"&&game.running)selectWeapon(1);
- if(e.code==="Digit3"&&game.running)selectWeapon(2);
- if(e.code==="Digit4"&&game.running)selectWeapon(3);
- if(e.code==="Digit5"&&game.running)selectWeapon(4);
- if(e.code==="KeyE"&&game.running&&!game.paused)pickupWeapon();
+
+document.addEventListener("keydown", e => {
+  keys[e.code] = true;
+
+  if (e.repeat && ["Escape", "KeyB", "KeyR"].includes(e.code)) {
+    return;
+  }
+
+  if (e.code === "Escape" && game.running) {
+
+    /*
+      Si está abierta la tienda, Escape primero la cierra.
+    */
+    if ($("#buy").style.display === "block") {
+      $("#buy").style.display = "none";
+      return;
+    }
+
+    game.paused = !game.paused;
+    $("#pause").style.display = game.paused ? "flex" : "none";
+
+    if (game.paused) {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+    } else {
+      requestPointer();
+    }
+
+    return;
+  }
+
+  if (e.code === "KeyB" &&
+      game.running &&
+      game.roundPhase === "buy") {
+
+    const buy = $("#buy");
+
+    buy.style.display =
+      buy.style.display === "block" ? "none" : "block";
+
+    renderBuy();
+    updateHUD();
+    return;
+  }
+
+  if (e.code === "KeyR" && isLiveGame()) {
+    reload();
+    return;
+  }
+
+  if (e.code === "Digit1" && isGameActive()) {
+    selectWeapon(0);
+    return;
+  }
+
+  if (e.code === "Digit2" && isGameActive()) {
+    selectWeapon(1);
+    return;
+  }
+
+  if (e.code === "Digit3" && isGameActive()) {
+    selectWeapon(2);
+    return;
+  }
+
+  if (e.code === "Digit4" && isGameActive()) {
+    selectWeapon(3);
+    return;
+  }
+
+  if (e.code === "Digit5" && isGameActive()) {
+    selectWeapon(4);
+    return;
+  }
+
+  if (e.code === "KeyE" && isLiveGame()) {
+    pickupWeapon();
+    return;
+  }
 });
-document.addEventListener("keyup",e=>keys[e.code]=false);
-document.addEventListener("mousedown",e=>{
- audioInit();
- if(e.button===0){mouse.left=true;if(game.running&&!game.paused&&game.roundPhase==="live")shoot()}
- if(e.button===2){mouse.right=true}
+
+document.addEventListener("keyup", e => {
+  keys[e.code] = false;
 });
-document.addEventListener("mouseup",e=>{if(e.button===0)mouse.left=false;if(e.button===2)mouse.right=false});
-document.addEventListener("contextmenu",e=>{if(game.running)e.preventDefault()});
-document.addEventListener("mousemove",e=>{
- if(document.pointerLockElement!==$("#view")||!game.running||game.paused)return;
- const s=getProfile()?.settings||DEFAULT_SETTINGS;
- game.yaw+=e.movementX*.0022*s.sens;
- game.pitch-=e.movementY*.0018*s.sens;
- game.pitch=Math.max(-.7,Math.min(.7,game.pitch));
+
+document.addEventListener("mousedown", e => {
+  audioInit();
+
+  if (e.button === 0) {
+    mouse.left = true;
+
+    if (isLiveGame()) {
+      /*
+        Si todavía no tenemos pointer lock,
+        el primer click lo solicita.
+      */
+      if (document.pointerLockElement !== $("#view")) {
+        requestPointer();
+        return;
+      }
+
+      shoot();
+    }
+  }
+
+  if (e.button === 2) {
+    mouse.right = true;
+  }
 });
-function requestPointer(){
- const c=$("#view");audioInit();
- if(c.requestPointerLock){
-   try{const r=c.requestPointerLock({unadjustedMovement:true});if(r?.catch)r.catch(()=>{})}
-   catch(e){try{c.requestPointerLock()}catch(_){}}
- }
-}
-$("#view").onclick=()=>{if(game.running&&!game.paused)requestPointer()};
-document.addEventListener("pointerlockchange",()=>{
- if(game.running&&!game.paused&&document.pointerLockElement!==$("#view")){
-   $("#pause").style.display="flex";game.paused=true;
- }
+
+document.addEventListener("mouseup", e => {
+  if (e.button === 0) mouse.left = false;
+  if (e.button === 2) mouse.right = false;
 });
-$("#resumeBtn").onclick=()=>{game.paused=false;$("#pause").style.display="none";requestPointer()};
-$("#restartBtn").onclick=()=>{startMatch(game.mode)};
-$("#exitBtn").onclick=()=>{
- game.running=false;if(document.pointerLockElement)document.exitPointerLock();$("#pause").style.display="none";show("menu");updateMenu();
-};
-$("#pauseSettings").onclick=()=>{
- game.paused=false;$("#pause").style.display="none";
- if(document.pointerLockElement)document.exitPointerLock();
- show("menu");document.querySelector('[data-section="settings"]').click();
-};
 
-/* ---------- WEAPONS ---------- */
-function currentWeapon(){return WEAPONS[game.player.weapon]}
-function selectWeapon(i){
- const p=game.player;
- if(!p)return;
- const w=p.inventory[i];if(!w)return;
- p.weapon=w;game.reloading=false;game.reloadTimer=0;updateHUD();
-}
-function reload(){
- if(!game.running||game.roundPhase!=="live"||!game.player.alive||game.reloading)return;
- const p=game.player,w=currentWeapon(),mag=p.mag[p.weapon]??w.mag,res=p.reserve[p.weapon]??w.reserve;
- if(mag>=w.mag||res<=0)return;
- game.reloading=true;game.reloadTimer=w.reload;reloadSound();
-}
-function finishReload(){
- const p=game.player,w=currentWeapon(),need=w.mag-(p.mag[p.weapon]??0);
- const take=Math.min(need,p.reserve[p.weapon]??0);
- p.mag[p.weapon]=(p.mag[p.weapon]??0)+take;p.reserve[p.weapon]-=take;
- game.reloading=false;updateHUD();
-}
-function canShoot(){return game.running&&!game.paused&&game.roundPhase==="live"&&game.player.alive&&!game.reloading}
-function shoot(){
- if(!canShoot()||game.shotTimer>0)return;
- const p=game.player,w=currentWeapon(),mag=p.mag[p.weapon]??w.mag;
- if(w.type==="knife"){knifeAttack();return}
- if(mag<=0){reload();return}
- p.mag[p.weapon]--;game.shotTimer=60/w.rate;
- game.trainingShots++;
- shotSound(w);muzzle();
- if(w.type==="shotgun"){
-   for(let i=0;i<(w.pellets||1);i++)fireRay(w,randomSpread(w.spread),true);
- }else fireRay(w,randomSpread(w.spread),false);
- game.shake+=w.recoil;
- updateHUD();
-}
-function randomSpread(s){return (Math.random()-.5)*s+(Math.random()-.5)*s}
-function knifeAttack(){
- const p=game.player;
- if(game.shotTimer>0)return;
- game.shotTimer=60/WEAPONS["EDGE-KNIFE"].rate;
- const enemies=getEnemies("blue");
- let best=null,bd=2.3;
- for(const e of enemies){
-  const d=dist(p,e),a=dirTo(p,e);
-  if(d<bd&&Math.abs(angleDiff(game.yaw,a))<.7){best=e;bd=d}
- }
- if(best){damageEntity(best,WEAPONS["EDGE-KNIFE"].damage,"body",p);hitSound()}
-}
-function muzzle(){
- game.particles.push({type:"muzzle",x:game.player.x,y:game.player.y,a:game.yaw,t:.08});
- if(game.particles.length>80)game.particles.shift();
-}
-function fireRay(w,spread,shotgun){
- const p=game.player,a=game.yaw+spread;
- const max=w.range;
- let wallD=castWall(p.x,p.y,a,max);
- let hit=null,hd=wallD;
- for(const e of getEnemies("blue")){
-  const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy);
-  if(d>hd+.2)continue;
-  const ad=Math.abs(angleDiff(a,Math.atan2(dy,dx)));
-  const radius=.32+(w.type==="shotgun"?.05:0);
-  if(Math.sin(ad)*d<radius&&Math.cos(ad)>0){hit=e;hd=d}
- }
- const ex=p.x+Math.cos(a)*hd,ey=p.y+Math.sin(a)*hd;
- game.tracers.push({x1:p.x,y1:p.y,x2:ex,y2:ey,t:.06});
- if(game.tracers.length>30)game.tracers.shift();
- if(hit){
-   const vertical=game.pitch;
-   let zone=vertical<-.22?"head":vertical>.35?"legs":"body";
-   if(w.type==="shotgun"&&vertical<-.15)zone="head";
-   damageEntity(hit,w.damage,zone,p);
-   game.trainingHits++;
- }
-}
-function damageEntity(target,base,zone,attacker){
- if(!target.alive)return;
- const w=attacker.kind==="player"?currentWeapon():WEAPONS[attacker.weapon];
- let mult=zone==="head"?w.head:zone==="legs"||zone==="arms"?w.limb:w.body;
- let damage=base*mult;
- if(w.type==="shotgun")damage*=.9+Math.random()*.25;
- const armor=target.armor||0;
- const absorb=Math.min(armor,damage*.35);
- target.armor-=absorb;damage-=absorb*.55;
- target.hp-=damage;
- if(attacker.kind==="player"){
-  const el=$("#damage");el.textContent=Math.round(damage)+(zone==="head"?" HEADSHOT":"");el.classList.remove("show");void el.offsetWidth;el.classList.add("show");
-  hitSound();
- }
- if(target.kind==="player")updateHUD();
- if(target.hp<=0)killEntity(target,attacker,zone==="head");
-}
-function pickupWeapon(){
- const p=game.player;let best=null,bd=1.5;
- for(const x of game.pickups){const d=dist(p,x);if(d<bd){best=x;bd=d}}
- if(!best)return;
- if(!p.inventory.includes(best.weapon)){
-   p.inventory.push(best.weapon);resetWeaponAmmo(p,best.weapon);
- }else{
-   p.mag[best.weapon]=WEAPONS[best.weapon].mag;
-   p.reserve[best.weapon]=WEAPONS[best.weapon].reserve;
- }
- p.weapon=best.weapon;game.pickups.splice(game.pickups.indexOf(best),1);updateHUD();tone(500,.05,"triangle",.04);
-}
+document.addEventListener("contextmenu", e => {
+  if (game.running) e.preventDefault();
+});
 
-/* ---------- BOT AI ---------- */
-function difficultyValues(b){
- return b.ai==="easy"?{vision:14,accuracy:.45,delay:.55,speed:.9}:
- b.ai==="hard"?{vision:22,accuracy:.88,delay:.18,speed:1.45}:
- {vision:18,accuracy:.68,delay:.34,speed:1.15};
-}
-function nearestEnemy(b){
- let best=null,bd=Infinity;
- for(const e of getEnemies(b.team)){
-   const d=dist(b,e);if(d<bd){bd=d;best=e}
- }
- return best;
-}
-function botVisible(b,t){
- const d=dist(b,t),v=difficultyValues(b);
- return d<v.vision&&lineClear(b.x,b.y,t.x,t.y);
-}
-function botShoot(b,t){
- const w=WEAPONS[b.weapon];
- if(b.reload>0||b.fireCd>0)return;
- if(b.mag<=0){b.reload=w.reload;return}
- b.mag--;b.fireCd=60/w.rate;
- const a=dirTo(b,t);
- const err=(Math.random()-.5)*(1-difficultyValues(b).accuracy)*.18;
- const shotA=a+err;
- const wallD=castWall(b.x,b.y,shotA,w.range);
- const d=dist(b,t);
- if(d<=wallD+.1&&Math.abs(angleDiff(shotA,a))<.11){
-   let zone=Math.random()<.13?"head":Math.random()<.18?"legs":"body";
-   if(b.ai==="hard"&&Math.random()<.25)zone="head";
-   damageEntity(t,w.damage,zone,b);
- }
- game.tracers.push({x1:b.x,y1:b.y,x2:b.x+Math.cos(shotA)*Math.min(w.range,wallD),y2:b.y+Math.sin(shotA)*Math.min(w.range,wallD),t:.06});
- shotSound(w);
-}
-function updateBot(b,dt){
- if(!b.alive)return;
- const v=difficultyValues(b);
- b.fireCd=Math.max(0,b.fireCd-dt);
- if(b.reload>0){b.reload-=dt;if(b.reload<=0){b.mag=WEAPONS[b.weapon].mag;b.reserve=WEAPONS[b.weapon].reserve}return}
- let target=nearestEnemy(b);
- if(target&&botVisible(b,target)){
-   b.target=target;b.lastSeen=2;b.state="engage";
- }else{
-   b.lastSeen-=dt;
-   if(b.lastSeen<=0){b.target=null;b.state="patrol"}
- }
- if(b.target?.alive){
-   const t=b.target,d=dist(b,t),a=dirTo(b,t);
-   if(d>7)moveEntity(b,Math.cos(a)*v.speed*dt,Math.sin(a)*v.speed*dt,.22);
-   else if(d<4)moveEntity(b,-Math.cos(a)*v.speed*.55*dt,-Math.sin(a)*v.speed*.55*dt,.22);
-   else{
-     const side=a+Math.PI/2*b.strafe;
-     moveEntity(b,Math.cos(side)*v.speed*.28*dt,Math.sin(side)*v.speed*.28*dt,.22);
-     if(Math.random()<.01)b.strafe*=-1;
-   }
-   if(botVisible(b,t))botShoot(b,t);
- }else{
-   const d=Math.hypot(b.x-b.patrolX,b.y-b.patrolY);
-   if(d<.5||Math.random()<.002){
-     const q=spawnPos(b.team);b.patrolX=q.x;b.patrolY=q.y;
-   }
-   const a=Math.atan2(b.patrolY-b.y,b.patrolX-b.x);
-   moveEntity(b,Math.cos(a)*v.speed*.32*dt,Math.sin(a)*v.speed*.32*dt,.22);
- }
-}
-function updateTraining(dt){
- if(game.mode!=="training")return;
- /* Training uses the same bots but they respawn rapidly after elimination. */
- for(const b of game.bots){
-   if(!b.alive){
-     if(!b.respawnTimer)b.respawnTimer=1.2;
-     b.respawnTimer-=dt;
-     if(b.respawnTimer<=0){
-       const s=spawnPos("red");b.x=s.x;b.y=s.y;b.hp=100;b.armor=0;b.alive=true;b.respawnTimer=0;
-     }
-   }
- }
-}
+document.addEventListener("mousemove", e => {
+  if (
+    document.pointerLockElement !== $("#view") ||
+    !game.running ||
+    game.paused
+  ) {
+    return;
+  }
 
-/* ---------- PLAYER PHYSICS ---------- */
-function updatePlayer(dt){
- const p=game.player;
- if(!p.alive)return;
- let f=(keys.KeyW?1:0)-(keys.KeyS?1:0),s=(keys.KeyD?1:0)-(keys.KeyA?1:0);
- const len=Math.hypot(f,s)||1;f/=len;s/=len;
- game.sprint=keys.ShiftLeft||keys.ShiftRight;
- game.crouch=keys.ControlLeft||keys.ControlRight;
- let speed=game.crouch?1.55:game.sprint?5.1:3.15;
- if(game.mode==="training")speed*=1.05;
- const ca=Math.cos(game.yaw),sa=Math.sin(game.yaw);
- moveEntity(p,(ca*f-sa*s)*speed*dt,(sa*f+ca*s)*speed*dt,.22);
- if(keys.Space&&game.ground&&!game.crouch){game.vz=5.2;game.ground=false}
- game.vz-=13*dt;game.z+=game.vz*dt;
- if(game.z<=0){game.z=0;game.vz=0;game.ground=true}
- if(game.shotTimer>0)game.shotTimer=Math.max(0,game.shotTimer-dt);
- if(game.reloading){game.reloadTimer-=dt;if(game.reloadTimer<=0)finishReload()}
- if(mouse.left&&game.shotTimer<=0)shoot();
-}
+  const s = getProfile()?.settings || DEFAULT_SETTINGS;
 
-/* ---------- GAME LOOP ---------- */
-function update(dt){
- if(!game.running||game.paused)return;
- if(game.roundPhase==="buy"){
-   game.buyTime-=dt;
-   if(game.buyTime<=0)beginRound();
- }else if(game.roundPhase==="live"){
-   if(game.mode!=="training"){
-     game.roundTime-=dt;
-     if(game.roundTime<=0){
-       const blue=allAlive("blue").length,red=allAlive("red").length;
-       endRound(blue>=red?"blue":"red");
-     }
-   }
-   updatePlayer(dt);
-   for(const b of game.bots)updateBot(b,dt);
-   updateTraining(dt);
-   const blue=allAlive("blue").length,red=allAlive("red").length;
-   if(game.mode==="competitive"){
-     if(blue===0)endRound("red");
-     else if(red===0)endRound("blue");
-   }
- }
- for(const x of game.tracers)x.t-=dt;
- game.tracers=game.tracers.filter(x=>x.t>0);
- for(const x of game.particles)x.t-=dt;
- game.particles=game.particles.filter(x=>x.t>0);
- for(const f of game.feed)f.time-=dt;
- game.feed=game.feed.filter(x=>x.time>0);
- updateHUD();
-}
-function loop(now){
- const dt=Math.min(.05,(now-game.last)/1000);game.last=now;
- update(dt);render();
- game.fpsFrames++;
- if(now-game.fpsTime>500){game.fps=game.fpsFrames*1000/(now-game.fpsTime);game.fpsFrames=0;game.fpsTime=now}
- requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
+  game.yaw += e.movementX * 0.0022 * s.sens;
+  game.pitch -= e.movementY * 0.0018 * s.sens;
 
-/* ---------- HUD ---------- */
-function updateHUD(){
- if(!game.player)return;
- const p=game.player,w=WEAPONS[p.weapon]||WEAPONS["KESTREL-C"];
- $("#blueScore").textContent=game.blue;$("#redScore").textContent=game.red;
- const t=game.roundPhase==="buy"?game.buyTime:game.roundTime;
- $("#roundTimer").textContent=game.mode==="training"?"TRAIN":`${Math.max(0,Math.floor(t/60)).toString().padStart(2,"0")}:${Math.max(0,Math.floor(t%60)).toString().padStart(2,"0")}`;
- $("#hp").textContent=Math.max(0,Math.ceil(p.hp));$("#hpbar").style.width=Math.max(0,p.hp)+"%";
- $("#armor").textContent=Math.max(0,Math.ceil(p.armor));
- $("#weaponName").textContent=p.weapon;$("#mag").textContent=p.mag[p.weapon]??w.mag;$("#reserve").textContent=p.reserve[p.weapon]??w.reserve;
- $("#hudMoney").textContent="$"+getProfile().stats.money;
- $("#cross").style.display=getProfile().settings.cross?"block":"none";
- $("#fps").style.display=getProfile().settings.fps?"block":"none";
- $("#fps").textContent="FPS "+Math.round(game.fps);
- $("#killfeed").innerHTML=game.feed.map(f=>`<div class="feed">${f.text}</div>`).join("");
- if(game.roundPhase==="buy"){
-   $("#roundmsg").innerHTML=`<h2>FASE DE COMPRA</h2><p>Comprá equipamiento • B para abrir/cerrar</p>`;
- }else if(game.roundPhase==="live"&&!game.player.alive){
-   $("#roundmsg").innerHTML=`<h2 style="color:var(--red)">ELIMINADO</h2><p>Esperando resolución de la ronda...</p>`;
- }else if(game.mode==="training"){
-   $("#roundmsg").innerHTML=`<p style="color:#7f9ca7">KILLS ${game.trainingKills} • PRECISIÓN ${game.trainingShots?Math.round(game.trainingHits/game.trainingShots*100):0}%</p>`;
- }
- let near=false;
- for(const x of game.pickups){if(dist(game.player,x)<1.5)near=true}
- $("#interact").style.display=near?"block":"none";
-}
+  game.pitch = Math.max(
+    -0.7,
+    Math.min(0.7, game.pitch)
+  );
+});
 
-/* ---------- RENDERER: RAYCAST 2.5D ---------- */
-const canvas=$("#view"),ctx=canvas.getContext("2d",{alpha:false});
-let W=0,H=0;
-function resize(){
- const dpr=Math.min(1.5,devicePixelRatio||1);
- W=Math.floor(innerWidth*dpr);H=Math.floor(innerHeight*dpr);
- canvas.width=W;canvas.height=H;canvas.style.width="100%";canvas.style.height="100%";
-}
-addEventListener("resize",resize);resize();
 
-function render(){
- if(!$("#game").classList.contains("active"))return;
- const q=getProfile()?.settings.quality||"medium";
- const step=q==="low"?4:q==="high"?2:3;
- ctx.fillStyle="#0a1014";ctx.fillRect(0,0,W,H);
- renderWorld(step);
- renderEntities();
- renderTracers();
- renderWeapon();
-}
-function renderWorld(step){
- const p=game.player;if(!p)return;
- const fov=(getProfile().settings.fov||82)*Math.PI/180;
- const horizon=H*.5-game.pitch*H*.42-game.z*H*.025;
- for(let x=0;x<W;x+=step){
-   const cam=(x/W-.5)*fov;
-   const a=game.yaw+cam;
-   let d=castWall(p.x,p.y,a,80);
-   const corrected=d*Math.cos(cam);
-   const wh=Math.min(H*2,H*1.35/Math.max(.001,corrected));
-   const y0=horizon-wh/2,y1=horizon+wh/2;
-   const gx=Math.floor(p.x+Math.cos(a)*d),gy=Math.floor(p.y+Math.sin(a)*d);
-   const shade=Math.max(0,1-corrected/32);
-   const side=(Math.abs((p.x+Math.cos(a)*d)-gx)>.5);
-   const r=Math.floor(48+shade*42),g=Math.floor(63+shade*50),b=Math.floor(70+shade*55);
-   ctx.fillStyle=`rgb(${r}${side?0:8},${g},${b})`.replace("rgb(","rgb(");
-   /* Correct RGB string without unnecessary object allocations. */
-   ctx.fillStyle=`rgb(${r},${g},${b})`;
-   ctx.fillRect(x,y0,step+1,wh);
-   const floorTop=y1;
-   const grad=ctx.createLinearGradient(0,floorTop,0,H);
-   grad.addColorStop(0,`rgb(${13+shade*10},${20+shade*10},${24+shade*10})`);
-   grad.addColorStop(1,"#05080a");
-   ctx.fillStyle=grad;ctx.fillRect(x,floorTop,step+1,H-floorTop);
-   const ceilBottom=y0;
-   ctx.fillStyle=`rgb(${5+shade*5},${10+shade*7},${14+shade*7})`;ctx.fillRect(x,0,step+1,ceilBottom);
-   if((x/step|0)%13===0){
-     ctx.fillStyle="rgba(80,150,160,.08)";ctx.fillRect(x,y0,step,2);
-   }
- }
- /* floor guide lines */
- ctx.strokeStyle="rgba(70,150,160,.08)";ctx.lineWidth=1;
- for(let i=1;i<12;i++){
-  const yy=horizon+(H-horizon)*(i/12);
-  ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();
- }
-}
-function project(x,y,z=0){
- const p=game.player;
- const dx=x-p.x,dy=y-p.y,d=Math.hypot(dx,dy);
- let a=angleDiff(game.yaw,Math.atan2(dy,dx));
- const fov=(getProfile().settings.fov||82)*Math.PI/180;
- if(Math.abs(a)>fov*.72)return null;
- const dcor=d*Math.cos(a);
- if(dcor<=.05)return null;
- const sx=W/2+(a/fov)*W;
- const horizon=H*.5-game.pitch*H*.42-game.z*H*.025;
- const scale=H/(dcor*1.2);
- return {x:sx,y:horizon-z*scale,d:d,scale};
-}
-function renderEntities(){
- const arr=[];
- for(const b of game.bots)if(b.alive){
-   const pr=project(b.x,b.y,.9);if(pr)arr.push({e:b,p:pr});
- }
- for(const x of game.pickups){const pr=project(x.x,x.y,.25);if(pr)arr.push({e:x,p:pr,pick:true})}
- arr.sort((a,b)=>b.p.d-a.p.d);
- for(const o of arr){
-   const b=o.e,p=o.p;
-   if(o.pick){drawPickup(p,b);continue}
-   const h=Math.min(H*.75,p.scale*1.8),w=h*.42;
-   ctx.globalAlpha=Math.max(.35,1-p.d/30);
-   ctx.fillStyle=b.team==="blue"?"#3d91c9":"#cf4657";
-   ctx.fillRect(p.x-w/2,p.y-h,w,h);
-   ctx.fillStyle="#202d34";ctx.fillRect(p.x-w*.7,p.y-h*.08,w*1.4,h*.18);
-   ctx.fillStyle="#c9d2d5";ctx.beginPath();ctx.arc(p.x,p.y-h*1.08,w*.38,0,TAU);ctx.fill();
-   ctx.fillStyle="#0a1115";ctx.fillRect(p.x-w*.18,p.y-h*.52,w*.36,h*.16);
-   ctx.fillStyle="#071016";ctx.fillRect(p.x-w*.42,p.y-h*.45,w*.84,h*.08);
-   ctx.globalAlpha=1;
- }
-}
-function drawPickup(pr,x){
- const s=Math.max(5,pr.scale*.12);
- ctx.save();ctx.translate(pr.x,pr.y);ctx.rotate(.35);
- ctx.fillStyle=WEAPONS[x.weapon].color;ctx.fillRect(-s*2,-s*.25,s*4,s*.5);
- ctx.fillStyle="#111b20";ctx.fillRect(-s*.2,-s,s*.6,s*2);
- ctx.restore();
-}
-function renderTracers(){
- for(const t of game.tracers){
-  const a=project(t.x1,t.y1,.9),b=project(t.x2,t.y2,.9);
-  if(!a||!b)continue;
-  ctx.globalAlpha=Math.max(0,t.t/.06);ctx.strokeStyle="#f5e7a0";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.globalAlpha=1;
- }
-}
-function renderWeapon(){
- if(!game.player?.alive)return;
- const w=WEAPONS[game.player.weapon],s=game.crouch?.8:1;
- const x=W*.72,y=H*.87;
- ctx.save();ctx.translate(x,y);ctx.rotate(-.03);
- ctx.fillStyle="#080e12";ctx.fillRect(0,0,W*.28*s,H*.08*s);
- ctx.fillStyle=w.color;ctx.fillRect(W*.02, -H*.055*s,W*.27*s,H*.045*s);
- ctx.fillStyle="#1d2a30";ctx.fillRect(W*.08,H*.02*s,W*.07*s,H*.18*s);
- ctx.fillStyle="#3a4b52";ctx.fillRect(W*.20,-H*.045*s,W*.07*s,H*.03*s);
- ctx.restore();
-}
+/* ---------- PAUSA ---------- */
 
-/* ---------- ROUND DROPS ---------- */
-function dropWeapon(x,y,w){
- if(!w||w==="EDGE-KNIFE")return;
- game.pickups.push({x,y,weapon:w});
- if(game.pickups.length>12)game.pickups.shift();
-}
+$("#resumeBtn").onclick = () => {
+  if (!game.running) return;
 
-/* ---------- DAMAGE / DEATH PATCH ---------- */
-const originalKillEntity=killEntity;
-killEntity=function(victim,killer,head=false){
- const wasPlayer=victim.kind==="player";
- originalKillEntity(victim,killer,head);
- if(!wasPlayer)dropWeapon(victim.x,victim.y,victim.weapon);
- if(killer?.kind==="player"&&victim.team==="red"){
-   game.trainingKills++;
-   const p=getProfile();p.stats.money+=100;saveProfile();
- }
- if(wasPlayer&&game.mode==="training"){
-   setTimeout(()=>{
-     if(game.running&&game.mode==="training"){
-       const s=spawnPos("blue");game.player.x=s.x;game.player.y=s.y;game.player.hp=100;game.player.armor=0;game.player.alive=true;
-     }
-   },1200);
- }
+  game.paused = false;
+  $("#pause").style.display = "none";
+
+  requestPointer();
 };
 
-/* ---------- TRAINING TARGETS ---------- */
-function spawnTrainingTargets(){
- for(const b of game.bots){b.ai="easy"}
-}
+$("#restartBtn").onclick = () => {
+  $("#pause").style.display = "none";
 
-/* ---------- PAUSE / MENU ---------- */
-$("#exitBtn").onclick=()=>{
- game.running=false;
- if(document.pointerLockElement)document.exitPointerLock();
- $("#pause").style.display="none";show("menu");updateMenu();
+  if (document.pointerLockElement) {
+    document.exitPointerLock();
+  }
+
+  startMatch(game.mode);
 };
 
-/* ---------- INITIAL SETTINGS ---------- */
-window.addEventListener("beforeunload",()=>{
- if(currentUser)saveProfile();
-});
+$("#exitBtn").onclick = () => {
+  game.running = false;
+  game.paused = false;
+
+  if (document.pointerLockElement) {
+    document.exitPointerLock();
+  }
+
+  $("#pause").style.display = "none";
+  $("#buy").style.display = "none";
+
+  show("menu");
+  updateMenu();
+};
+
+$("#pauseSettings").onclick = () => {
+  game.running = false;
+  game.paused = false;
+
+  if (document.pointerLockElement) {
+    document.exitPointerLock();
+  }
+
+  $("#pause").style.display = "none";
+  $("#buy").style.display = "none";
+
+  show("menu");
+
+  const settingsButton =
+    document.querySelector('[data-section="settings"]');
+
+  if (settingsButton) {
+    settingsButton.click();
+  }
+};
+
+
+/* =========================================================
+   DAMAGE / DEATH — REEMPLAZAR TODO EL PATCH ANTERIOR
+   ========================================================= */
+
+function awardKill(killer, victim) {
+  if (!killer || killer.kind !== "player") return;
+
+  /*
+    En entrenamiento no damos créditos ni estadísticas
+    competitivas.
+  */
+  if (game.mode === "training") {
+    game.trainingKills++;
+    return;
+  }
+
+  const p = getProfile();
+
+  p.stats.kills++;
+  p.stats.money += 300;
+
+  saveProfile();
+}
+
+function dropWeaponFromVictim(victim) {
+  if (!victim || victim.kind !== "bot") return;
+  if (!victim.weapon) return;
+  if (victim.weapon === "EDGE-KNIFE") return;
+
+  dropWeapon(
+    victim.x,
+    victim.y,
+    victim.weapon
+  );
+}
+
+function handlePlayerDeath() {
+  game.player.alive = false;
+
+  /*
+    En competitivo esperamos la resolución de la ronda.
+  */
+  if (game.mode === "competitive") {
+    $("#roundmsg").innerHTML =
+      '<h2 style="color:var(--red)">ELIMINADO</h2>' +
+      "<p>Esperando resolución de la ronda...</p>";
+
+    return;
+  }
+
+  /*
+    En entrenamiento reaparece después de 1.2 segundos.
+  */
+  setTimeout(() => {
+    if (
+      !game.running ||
+      game.mode !== "training"
+    ) {
+      return;
+    }
+
+    const s = spawnPos("blue");
+
+    game.player.x = s.x;
+    game.player.y = s.y;
+    game.player.hp = 100;
+    game.player.armor = 0;
+    game.player.alive = true;
+
+    game.yaw = 0;
+    game.pitch = 0;
+
+    updateHUD();
+  }, 1200);
+}
+
+function killEntity(victim, killer, head = false) {
+
+  if (!victim || !victim.alive) return;
+
+  victim.alive = false;
+  victim.hp = 0;
+  victim.deaths = (victim.deaths || 0) + 1;
+
+  if (killer) {
+    killer.kills = (killer.kills || 0) + 1;
+  }
+
+  addFeed(
+    killer?.kind === "player"
+      ? "TÚ"
+      : killer?.team === "blue"
+        ? "ALIADO"
+        : "ENEMIGO",
+
+    victim.kind === "player"
+      ? "TÚ"
+      : victim.team === "blue"
+        ? "ALIADO"
+        : "ENEMIGO",
+
+    head
+  );
+
+  tone(
+    head ? 1100 : 700,
+    .09,
+    "triangle",
+    .06
+  );
+
+  /*
+    MUERTE DEL JUGADOR
+  */
+  if (victim.kind === "player") {
+
+    if (game.mode === "competitive") {
+      const p = getProfile();
+
+      p.stats.deaths++;
+      saveProfile();
+    }
+
+    handlePlayerDeath();
+    return;
+  }
+
+  /*
+    MUERTE DE BOT
+  */
+  awardKill(killer, victim);
+
+  dropWeaponFromVictim(victim);
+}
+
+
+/* =========================================================
+   ROUND CONTROL
+   ========================================================= */
+
+function startMatch(mode = "competitive") {
+
+  audioInit();
+
+  game.mode = mode;
+  game.running = true;
+  game.paused = false;
+
+  game.blue = 0;
+  game.red = 0;
+  game.round = 1;
+
+  game.player = makePlayer();
+  initInventoryAmmo();
+
+  game.bots = [];
+
+  /*
+    Siempre tenemos 5v5.
+  */
+  for (let i = 0; i < 4; i++) {
+    game.bots.push(
+      makeBot(
+        "blue",
+        i,
+        mode === "training" ? "easy" : "normal"
+      )
+    );
+  }
+
+  for (let i = 0; i < 5; i++) {
+    game.bots.push(
+      makeBot(
+        "red",
+        i,
+        mode === "training"
+          ? "easy"
+          : i < 2
+            ? "easy"
+            : i < 4
+              ? "normal"
+              : "hard"
+      )
+    );
+  }
+
+  game.pickups = [];
+  game.particles = [];
+  game.tracers = [];
+  game.feed = [];
+
+  game.roundPhase = "buy";
+  game.buyTime = mode === "training" ? 0 : 15;
+  game.roundTime = 120;
+
+  game.roundmsg = $("#roundmsg");
+
+  game.trainingKills = 0;
+  game.trainingShots = 0;
+  game.trainingHits = 0;
+  game.trainingStart = performance.now();
+
+  show("game");
+
+  /*
+    En entrenamiento empezamos directamente.
+  */
+  if (mode === "training") {
+    $("#buy").style.display = "none";
+    beginRound();
+  } else {
+    $("#buy").style.display = "block";
+    renderBuy();
+  }
+
+  $("#pause").style.display = "none";
+
+  updateHUD();
+
+  /*
+    Pointer Lock requiere interacción del usuario;
+    si el navegador no lo acepta, el click en canvas
+    lo solicitará nuevamente.
+  */
+  requestPointer();
+}
+
+
+function beginRound() {
+
+  if (!game.running) return;
+
+  const p = game.player;
+
+  p.alive = true;
+  p.hp = 100;
+
+  /*
+    El armor comprado durante la fase de compra
+    se mantiene al comenzar la ronda.
+  */
+
+  const s = spawnPos("blue");
+
+  p.x = s.x;
+  p.y = s.y;
+
+  game.z = 0;
+  game.vz = 0;
+  game.ground = true;
+
+  /*
+    Evitamos que el jugador aparezca mirando
+    en una dirección completamente aleatoria.
+  */
+  game.yaw = 0;
+  game.pitch = 0;
+
+  p.weapon =
+    p.inventory.includes("KESTREL-C")
+      ? "KESTREL-C"
+      : p.inventory[0];
+
+  for (const b of game.bots) {
+
+    b.alive = true;
+    b.hp = 100;
+    b.reload = 0;
+    b.fireCd = 0;
+    b.target = null;
+    b.lastSeen = 0;
+
+    const sp = spawnPos(b.team);
+
+    b.x = sp.x;
+    b.y = sp.y;
+
+    const w = WEAPONS[b.weapon];
+
+    b.mag = w.mag;
+    b.reserve = w.reserve;
+
+    b.respawnTimer = 0;
+  }
+
+  game.roundPhase = "live";
+  game.roundTime =
+    game.mode === "training"
+      ? 999
+      : 120;
+
+  game.roundmsg.innerHTML = "";
+
+  $("#buy").style.display = "none";
+
+  updateHUD();
+}
+
+
+/* =========================================================
+   BOT RESPAWN — SOLO ENTRENAMIENTO
+   ========================================================= */
+
+function updateTraining(dt) {
+
+  if (game.mode !== "training") return;
+
+  for (const b of game.bots) {
+
+    if (b.alive) continue;
+
+    if (!b.respawnTimer) {
+      b.respawnTimer = 1.2;
+    }
+
+    b.respawnTimer -= dt;
+
+    if (b.respawnTimer > 0) continue;
+
+    const s = spawnPos("red");
+
+    b.x = s.x;
+    b.y = s.y;
+    b.hp = 100;
+    b.armor = 0;
+    b.alive = true;
+    b.target = null;
+    b.lastSeen = 0;
+    b.fireCd = 0;
+    b.reload = 0;
+    b.respawnTimer = 0;
+
+    const w = WEAPONS[b.weapon];
+
+    b.mag = w.mag;
+    b.reserve = w.reserve;
+  }
+}
+
+
+/* =========================================================
+   BOT AI — NO ACTUAR DESPUÉS DE FINALIZAR RONDA
+   ========================================================= */
+
+function updateBot(b, dt) {
+
+  if (!b.alive) return;
+
+  if (
+    !game.running ||
+    game.paused ||
+    game.roundPhase !== "live"
+  ) {
+    return;
+  }
+
+  const v = difficultyValues(b);
+
+  b.fireCd = Math.max(0, b.fireCd - dt);
+
+  if (b.reload > 0) {
+    b.reload -= dt;
+
+    if (b.reload <= 0) {
+      const w = WEAPONS[b.weapon];
+
+      b.mag = w.mag;
+      b.reserve = w.reserve;
+    }
+
+    return;
+  }
+
+  let target = nearestEnemy(b);
+
+  if (target && botVisible(b, target)) {
+    b.target = target;
+    b.lastSeen = 2;
+    b.state = "engage";
+  } else {
+    b.lastSeen -= dt;
+
+    if (b.lastSeen <= 0) {
+      b.target = null;
+      b.state = "patrol";
+    }
+  }
+
+  if (!b.target?.alive) {
+    b.target = null;
+  }
+
+  if (b.target) {
+
+    const t = b.target;
+    const d = dist(b, t);
+    const a = dirTo(b, t);
+
+    if (d > 7) {
+
+      moveEntity(
+        b,
+        Math.cos(a) * v.speed * dt,
+        Math.sin(a) * v.speed * dt,
+        .22
+      );
+
+    } else if (d < 4) {
+
+      moveEntity(
+        b,
+        -Math.cos(a) * v.speed * .55 * dt,
+        -Math.sin(a) * v.speed * .55 * dt,
+        .22
+      );
+
+    } else {
+
+      const side =
+        a + Math.PI / 2 * b.strafe;
+
+      moveEntity(
+        b,
+        Math.cos(side) * v.speed * .28 * dt,
+        Math.sin(side) * v.speed * .28 * dt,
+        .22
+      );
+
+      if (Math.random() < .01) {
+        b.strafe *= -1;
+      }
+    }
+
+    if (botVisible(b, t)) {
+      botShoot(b, t);
+    }
+
+  } else {
+
+    const d = Math.hypot(
+      b.x - b.patrolX,
+      b.y - b.patrolY
+    );
+
+    if (d < .5 || Math.random() < .002) {
+      const q = spawnPos(b.team);
+
+      b.patrolX = q.x;
+      b.patrolY = q.y;
+    }
+
+    const a = Math.atan2(
+      b.patrolY - b.y,
+      b.patrolX - b.x
+    );
+
+    moveEntity(
+      b,
+      Math.cos(a) * v.speed * .32 * dt,
+      Math.sin(a) * v.speed * .32 * dt,
+      .22
+    );
+  }
+}
+
+
+/* =========================================================
+   RENDER — LOS: LOS BOTS NO SE DIBUJAN A TRAVÉS DE PAREDES
+   ========================================================= */
+
+function entityVisibleFromPlayer(e) {
+
+  if (!game.player) return false;
+
+  return lineClear(
+    game.player.x,
+    game.player.y,
+    e.x,
+    e.y
+  );
+}
+
+
+function renderEntities() {
+
+  const arr = [];
+
+  for (const b of game.bots) {
+
+    if (!b.alive) continue;
+
+    /*
+      Nuevo: no mostramos enemigos detrás de paredes.
+    */
+    if (!entityVisibleFromPlayer(b)) continue;
+
+    const pr = project(
+      b.x,
+      b.y,
+      .9
+    );
+
+    if (pr) {
+      arr.push({
+        e: b,
+        p: pr
+      });
+    }
+  }
+
+  for (const x of game.pickups) {
+
+    if (!entityVisibleFromPlayer(x)) continue;
+
+    const pr = project(
+      x.x,
+      x.y,
+      .25
+    );
+
+    if (pr) {
+      arr.push({
+        e: x,
+        p: pr,
+        pick: true
+      });
+    }
+  }
+
+  arr.sort(
+    (a, b) => b.p.d - a.p.d
+  );
+
+  for (const o of arr) {
+
+    const b = o.e;
+    const p = o.p;
+
+    if (o.pick) {
+      drawPickup(p, b);
+      continue;
+    }
+
+    const h =
+      Math.min(
+        H * .75,
+        p.scale * 1.8
+      );
+
+    const w = h * .42;
+
+    ctx.globalAlpha =
+      Math.max(
+        .35,
+        1 - p.d / 30
+      );
+
+    ctx.fillStyle =
+      b.team === "blue"
+        ? "#3d91c9"
+        : "#cf4657";
+
+    ctx.fillRect(
+      p.x - w / 2,
+      p.y - h,
+      w,
+      h
+    );
+
+    ctx.fillStyle = "#202d34";
+
+    ctx.fillRect(
+      p.x - w * .7,
+      p.y - h * .08,
+      w * 1.4,
+      h * .18
+    );
+
+    ctx.fillStyle = "#c9d2d5";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y - h * 1.08,
+      w * .38,
+      0,
+      TAU
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle = "#0a1115";
+
+    ctx.fillRect(
+      p.x - w * .18,
+      p.y - h * .52,
+      w * .36,
+      h * .16
+    );
+
+    ctx.fillStyle = "#071016";
+
+    ctx.fillRect(
+      p.x - w * .42,
+      p.y - h * .45,
+      w * .84,
+      h * .08
+    );
+
+    ctx.globalAlpha = 1;
+  }
+}
+
+
+/* =========================================================
+   UPDATE — CONTROL DE RONDAS
+   ========================================================= */
+
+function update(dt) {
+
+  if (!game.running || game.paused) return;
+
+  if (game.roundPhase === "buy") {
+
+    game.buyTime -= dt;
+
+    if (game.buyTime <= 0) {
+      beginRound();
+    }
+
+  } else if (game.roundPhase === "live") {
+
+    if (game.mode !== "training") {
+
+      game.roundTime -= dt;
+
+      if (game.roundTime <= 0) {
+
+        const blue =
+          allAlive("blue").length;
+
+        const red =
+          allAlive("red").length;
+
+        endRound(
+          blue >= red
+            ? "blue"
+            : "red"
+        );
+
+        /*
+          Importantísimo:
+          no seguir actualizando bots después
+          de haber cerrado la ronda.
+        */
+        if (game.roundPhase !== "live") {
+          updateHUD();
+          return;
+        }
+      }
+    }
+
+    updatePlayer(dt);
+
+    /*
+      Si updatePlayer provocó alguna transición,
+      no seguir ejecutando IA.
+    */
+    if (game.roundPhase !== "live") {
+      updateHUD();
+      return;
+    }
+
+    for (const b of game.bots) {
+      updateBot(b, dt);
+    }
+
+    updateTraining(dt);
+
+    if (game.mode === "competitive") {
+
+      const blue =
+        allAlive("blue").length;
+
+      const red =
+        allAlive("red").length;
+
+      if (blue === 0) {
+        endRound("red");
+      } else if (red === 0) {
+        endRound("blue");
+      }
+    }
+  }
+
+  for (const x of game.tracers) {
+    x.t -= dt;
+  }
+
+  game.tracers =
+    game.tracers.filter(
+      x => x.t > 0
+    );
+
+  for (const x of game.particles) {
+    x.t -= dt;
+  }
+
+  game.particles =
+    game.particles.filter(
+      x => x.t > 0
+    );
+
+  for (const f of game.feed) {
+    f.time -= dt;
+  }
+
+  game.feed =
+    game.feed.filter(
+      x => x.time > 0
+    );
+
+  updateHUD();
+}
+
+
+/* =========================================================
+   TRAINING HUD
+   ========================================================= */
+
+function updateHUD() {
+
+  if (!game.player) return;
+
+  const p = game.player;
+
+  const w =
+    WEAPONS[p.weapon] ||
+    WEAPONS["KESTREL-C"];
+
+  $("#blueScore").textContent =
+    game.mode === "training"
+      ? "-"
+      : game.blue;
+
+  $("#redScore").textContent =
+    game.mode === "training"
+      ? "-"
+      : game.red;
+
+  const t =
+    game.roundPhase === "buy"
+      ? game.buyTime
+      : game.roundTime;
+
+  $("#roundTimer").textContent =
+    game.mode === "training"
+      ? "TRAIN"
+      : `${Math.max(
+          0,
+          Math.floor(t / 60)
+        ).toString().padStart(2, "0")}:${Math.max(
+          0,
+          Math.floor(t % 60)
+        ).toString().padStart(2, "0")}`;
+
+  $("#hp").textContent =
+    Math.max(
+      0,
+      Math.ceil(p.hp)
+    );
+
+  $("#hpbar").style.width =
+    Math.max(
+      0,
+      p.hp
+    ) + "%";
+
+  $("#armor").textContent =
+    Math.max(
+      0,
+      Math.ceil(p.armor)
+    );
+
+  $("#weaponName").textContent =
+    p.weapon;
+
+  $("#mag").textContent =
+    p.mag[p.weapon] ?? w.mag;
+
+  $("#reserve").textContent =
+    p.reserve[p.weapon] ?? w.reserve;
+
+  $("#hudMoney").textContent =
+    game.mode === "training"
+      ? "TRAINING"
+      : "$" + getProfile().stats.money;
+
+  const settings =
+    getProfile().settings;
+
+  $("#cross").style.display =
+    settings.cross ? "block" : "none";
+
+  $("#fps").style.display =
+    settings.fps ? "block" : "none";
+
+  $("#fps").textContent =
+    "FPS " + Math.round(game.fps);
+
+  $("#killfeed").innerHTML =
+    game.feed
+      .map(f =>
+        `<div class="feed">${f.text}</div>`
+      )
+      .join("");
+
+  if (game.roundPhase === "buy") {
+
+    $("#roundmsg").innerHTML =
+      `<h2>FASE DE COMPRA</h2>
+       <p>Comprá equipamiento • B para abrir/cerrar</p>`;
+
+  } else if (
+    game.roundPhase === "live" &&
+    !game.player.alive &&
+    game.mode === "competitive"
+  ) {
+
+    $("#roundmsg").innerHTML =
+      `<h2 style="color:var(--red)">ELIMINADO</h2>
+       <p>Esperando resolución de la ronda...</p>`;
+
+  } else if (game.mode === "training") {
+
+    const accuracy =
+      game.trainingShots
+        ? Math.round(
+            game.trainingHits /
+            game.trainingShots *
+            100
+          )
+        : 0;
+
+    $("#roundmsg").innerHTML =
+      `<p style="color:#7f9ca7">
+        KILLS ${game.trainingKills}
+        • PRECISIÓN ${accuracy}%
+      </p>`;
+  }
+
+  let near = false;
+
+  for (const x of game.pickups) {
+    if (
+      dist(game.player, x) < 1.5
+    ) {
+      near = true;
+      break;
+    }
+  }
+
+  $("#interact").style.display =
+    near ? "block" : "none";
+}
+
+
+/* =========================================================
+   REINICIO LIMPIO
+   ========================================================= */
+
+function hardResetGameState() {
+
+  game.running = false;
+  game.paused = false;
+
+  game.player = null;
+  game.bots = [];
+  game.pickups = [];
+  game.particles = [];
+  game.tracers = [];
+  game.feed = [];
+
+  game.roundPhase = "buy";
+  game.blue = 0;
+  game.red = 0;
+  game.round = 1;
+
+  game.shotTimer = 0;
+  game.reloadTimer = 0;
+  game.reloading = false;
+
+  game.yaw = 0;
+  game.pitch = 0;
+  game.z = 0;
+  game.vz = 0;
+
+  if (document.pointerLockElement) {
+    document.exitPointerLock();
+  }
+
+  $("#buy").style.display = "none";
+  $("#pause").style.display = "none";
+}
+
+
+/* ---------- SALIDA AL MENÚ ---------- */
+
+$("#exitBtn").onclick = () => {
+
+  hardResetGameState();
+
+  show("menu");
+  updateMenu();
+};
+
+
+/* ---------- RESULTADO ---------- */
+
+$("#resultMenu").onclick = () => {
+
+  hardResetGameState();
+
+  show("menu");
+  updateMenu();
+};
+
+
+/* =========================================================
+   FIX DE SELECTOR DE ARMAS
+   ========================================================= */
+
+function selectWeapon(i) {
+
+  const p = game.player;
+
+  if (!p || !p.alive) return;
+
+  const weapon =
+    p.inventory[i];
+
+  if (!weapon) return;
+
+  if (!WEAPONS[weapon]) return;
+
+  p.weapon = weapon;
+
+  game.reloading = false;
+  game.reloadTimer = 0;
+
+  updateHUD();
+}
+
+
+/* =========================================================
+   FIX DE RECARGA
+   ========================================================= */
+
+function reload() {
+
+  if (!isLiveGame()) return;
+  if (game.reloading) return;
+
+  const p = game.player;
+  const w = currentWeapon();
+
+  if (!w || w.type === "knife") return;
+
+  const mag =
+    p.mag[p.weapon] ?? w.mag;
+
+  const reserve =
+    p.reserve[p.weapon] ?? w.reserve;
+
+  if (mag >= w.mag) return;
+  if (reserve <= 0) return;
+
+  game.reloading = true;
+  game.reloadTimer = w.reload;
+
+  reloadSound();
+}
+
+function finishReload() {
+
+  const p = game.player;
+  const w = currentWeapon();
+
+  if (!w || w.type === "knife") {
+    game.reloading = false;
+    return;
+  }
+
+  const current =
+    p.mag[p.weapon] ?? 0;
+
+  const reserve =
+    p.reserve[p.weapon] ?? 0;
+
+  const needed =
+    w.mag - current;
+
+  const amount =
+    Math.min(
+      needed,
+      reserve
+    );
+
+  p.mag[p.weapon] =
+    current + amount;
+
+  p.reserve[p.weapon] =
+    reserve - amount;
+
+  game.reloading = false;
+
+  updateHUD();
+}
+
+
+/* =========================================================
+   FIX DE SHOOT
+   ========================================================= */
+
+function canShoot() {
+
+  return (
+    game.running &&
+    !game.paused &&
+    game.roundPhase === "live" &&
+    game.player &&
+    game.player.alive &&
+    !game.reloading &&
+    document.pointerLockElement === $("#view")
+  );
+}
+
+function shoot() {
+
+  if (!canShoot()) return;
+  if (game.shotTimer > 0) return;
+
+  const p = game.player;
+  const w = currentWeapon();
+
+  if (!w) return;
+
+  if (w.type === "knife") {
+    knifeAttack();
+    return;
+  }
+
+  const mag =
+    p.mag[p.weapon] ?? w.mag;
+
+  if (mag <= 0) {
+    reload();
+    return;
+  }
+
+  p.mag[p.weapon]--;
+
+  game.shotTimer =
+    60 / w.rate;
+
+  game.trainingShots++;
+
+  shotSound(w);
+  muzzle();
+
+  if (w.type === "shotgun") {
+
+    for (
+      let i = 0;
+      i < (w.pellets || 1);
+      i++
+    ) {
+      fireRay(
+        w,
+        randomSpread(w.spread),
+        true
+      );
+    }
+
+  } else {
+
+    fireRay(
+      w,
+      randomSpread(w.spread),
+      false
+    );
+  }
+
+  game.shake += w.recoil;
+
+  updateHUD();
+}
 </script>
-</body>
-</html>
