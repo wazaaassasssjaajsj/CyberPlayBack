@@ -10,36 +10,30 @@
 
 <div id="loginGate">
   <div class="card login-card">
-    <div class="eyebrow">// Acceso privado</div>
     <h2>Ingresá tus datos</h2>
     <label for="loginUser">Usuario</label>
     <input type="text" id="loginUser" autocomplete="off">
     <label for="loginPass">Contraseña</label>
     <input type="password" id="loginPass" autocomplete="off">
     <div id="loginError" class="login-error">Usuario o contraseña incorrectos.</div>
-    <button class="generate static" id="btnLogin">Entrar</button>
+    <button class="generate static" id="btnLogin">Continuar</button>
   </div>
 </div>
 
 <div class="wrap" id="mainApp">
   <header>
-    <div class="eyebrow">// Config Generator</div>
+    <div class="eyebrow">Calibrador Sensibilidad</div>
     <h1>Calibrador de<br>Sensibilidad</h1>
-    <p class="sub">Corre 100% en tu navegador. Guardá esta página y funciona sin internet, en cualquier celular.</p>
-    <button class="secondary logout-btn" id="btnLogout">Cerrar sesión</button>
+    <button class="secondary logout-btn" id="btnLogout">Abandonar</button>
   </header>
 
   <div class="card">
     <h2>01 · Dispositivo</h2>
-    <label for="nombre">Nombre del dispositivo (opcional)</label>
-    <input type="text" id="nombre" placeholder="Ej: Samsung A54">
+    <label for="nombre">Nombre del dispositivo </label>
+    <input type="text" id="nombre" placeholder="Modelo">
 
     <label for="gama">DPI de tu celular</label>
     <select id="gama">
-      <option value="360">Gama baja (360)</option>
-      <option value="400" selected>Gama media (400)</option>
-      <option value="480">Gama alta (480)</option>
-      <option value="600">Gama gamer (600)</option>
       <option value="custom">Otro</option>
     </select>
     <input type="number" id="dpiManual" placeholder="DPI exacto" class="hidden">
@@ -48,7 +42,7 @@
   <div class="card">
     <h2>02 · Situación</h2>
     <div class="radiogrid" id="situacionGrid">
-      <div><input type="radio" name="sit" id="s1" value="no_sube" checked><label class="opt" for="s1">La mira no sube (poco retroceso controlado)</label></div>
+      <div><input type="radio" name="sit" id="s1" value="no_sube" checked><label class="opt" for="s1">La mira no sube</label></div>
       <div><input type="radio" name="sit" id="s2" value="se_pasa"><label class="opt" for="s2">La mira se pasa de la cabeza</label></div>
       <div><input type="radio" name="sit" id="s3" value="giros"><label class="opt" for="s3">Cuesta hacer giros rápidos 360°</label></div>
       <div><input type="radio" name="sit" id="s4" value="consistencia"><label class="opt" for="s4">Buena puntería pero pierdo consistencia</label></div>
@@ -91,7 +85,7 @@
   </div>
 
   <div class="card" id="resultado">
-    <span class="ready-tag">✅ Calibración lista</span>
+    <span class="ready-tag"> Calibración lista</span>
     <div class="config-mono" id="configOutput"></div>
     <div class="btn-row">
       <button class="secondary download" id="btnDescargar">⬇ Descargar .txt</button>
@@ -106,7 +100,7 @@
   <button class="generate" id="btnGenerar">Calibrar sensibilidad</button>
 </div>
 
-<footer>Calibrador local — no envía datos a ningún servidor. Guardalo en tu celular para usarlo sin conexión.</footer>
+<footer>Puto el que lee</footer>
 
 <script src="script.js"></script>
 </body>
