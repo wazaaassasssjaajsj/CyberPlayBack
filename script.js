@@ -1,8 +1,8 @@
 const $ = id => document.getElementById(id);
 
 // ============ LOGIN ============
-const USUARIO_VALIDO = "PedritoElMasRiko";
-const CLAVE_VALIDA = "Pedrito_2026";
+const USUARIO_VALIDO = "Cyber_Pb27";
+const CLAVE_VALIDA = "Torneo-Free99!";
 
 function mostrarApp(){
   $("loginGate").style.display = "none";
