@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberPlayback — Calibrador</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginGate">
+  <div class="card login-card">
+    <div class="eyebrow">// Acceso privado</div>
+    <h2>Ingresá tus datos</h2>
+    <label for="loginUser">Usuario</label>
+    <input type="text" id="loginUser" autocomplete="off">
+    <label for="loginPass">Contraseña</label>
+    <input type="password" id="loginPass" autocomplete="off">
+    <div id="loginError" class="login-error">Usuario o contraseña incorrectos.</div>
+    <button class="generate static" id="btnLogin">Entrar</button>
+  </div>
+</div>
+
+<div id="mainApp">
+
+  <div class="topbar">
+    <button class="hamburger" id="btnMenu" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="topbar-title">CyberPlayback</span>
+  </div>
+
+  <nav class="navmenu" id="navMenu">
+    <a href="#" class="navlink active" data-view="inicio">Inicio</a>
+    <a href="#" class="navlink" data-view="calibrar">Calibrar sensi</a>
+    <a href="#" class="navlink" data-view="generar">Generar sensi</a>
+    <button class="secondary logout-btn" id="btnLogout">Cerrar sesión</button>
+  </nav>
+
+  <div class="overlay" id="navOverlay"></div>
+
+  <!-- ============ VISTA: INICIO ============ -->
+  <section class="wrap vista active" id="vistaInicio">
+    <header>
+      <div class="eyebrow">// CyberPlayback</div>
+      <h1>Sensibilidad<br>Free Fire</h1>
+      <p class="sub">Ajustá tu sensibilidad actual o generá una configuración nueva según tu celular.</p>
+    </header>
+
+    <div class="card">
+      <h2>Calibrar sensibilidad</h2>
+      <p class="desc">Ya jugás con una sensibilidad puesta pero algo no te cierra (la mira no sube, se te pasa de la cabeza, te cuesta girar). Cargás tus valores actuales y el problema, y te devuelve la sensibilidad corregida.</p>
+      <button class="secondary ir-btn" data-goto="calibrar">Ir a Calibrar →</button>
+    </div>
+
+    <div class="card">
+      <h2>Generar sensibilidad</h2>
+      <p class="desc">Arrancás de cero. Elegís el modelo de tu celular y te genera una configuración completa lista para usar, en una imagen que podés guardar directamente desde la pantalla.</p>
+      <button class="secondary ir-btn" data-goto="generar">Ir a Generar →</button>
+    </div>
+  </section>
+
+  <!-- ============ VISTA: CALIBRAR ============ -->
+  <section class="wrap vista" id="vistaCalibrar">
+    <header>
+      <div class="eyebrow">// Calibrador</div>
+      <h1>Calibrar<br>Sensibilidad</h1>
+    </header>
+
+    <div class="card">
+      <h2>01 · Dispositivo</h2>
+      <label for="nombre">Nombre del dispositivo (opcional)</label>
+      <input type="text" id="nombre" placeholder="Ej: Samsung A54">
+
+      <label for="dpiInput">DPI</label>
+      <input type="number" id="dpiInput" placeholder="Ej: 400" min="50" max="1000">
+    </div>
+
+    <div class="card">
+      <h2>02 · Situación</h2>
+      <div class="radiogrid" id="situacionGrid">
+        <div><input type="radio" name="sit" id="s1" value="no_sube" checked><label class="opt" for="s1">La mira no sube</label></div>
+        <div><input type="radio" name="sit" id="s2" value="se_pasa"><label class="opt" for="s2">La mira se pasa de la cabeza</label></div>
+        <div><input type="radio" name="sit" id="s3" value="giros"><label class="opt" for="s3">Cuesta hacer giros rápidos 360°</label></div>
+        <div><input type="radio" name="sit" id="s4" value="consistencia"><label class="opt" for="s4">Pierdo consistencia</label></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>03 · Sensibilidad actual (0–200)</h2>
+      <div class="stat-block">
+        <label for="n_general">General</label>
+        <input type="number" id="n_general" placeholder="Ej: 100" min="0" max="200">
+      </div>
+      <div class="stat-block">
+        <label for="n_punto_rojo">Punto rojo</label>
+        <input type="number" id="n_punto_rojo" placeholder="Ej: 100" min="0" max="200">
+      </div>
+      <div class="stat-block">
+        <label for="n_x2">Mira 2x</label>
+        <input type="number" id="n_x2" placeholder="Ej: 100" min="0" max="200">
+      </div>
+      <div class="stat-block">
+        <label for="n_x4">Mira 4x / 8x</label>
+        <input type="number" id="n_x4" placeholder="Ej: 100" min="0" max="200">
+      </div>
+      <div class="stat-block locked">
+        <label for="n_awm">AWM / Sniper<span class="locked-tag">no se ajusta</span></label>
+        <input type="number" id="n_awm" placeholder="Opcional" min="0" max="200">
+      </div>
+      <div class="stat-block locked">
+        <label for="n_camara">Cámara / Free look<span class="locked-tag">no se ajusta</span></label>
+        <input type="number" id="n_camara" placeholder="Opcional" min="0" max="200">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>04 · Botón de disparo (opcional)</h2>
+      <input type="text" id="boton" placeholder="Ej: abajo a la derecha, grande" class="no-margin">
+    </div>
+
+    <div class="card" id="resultadoCalibrar">
+      <span class="ready-tag">✅ Calibración lista</span>
+      <div class="config-mono" id="configOutput"></div>
+      <div class="btn-row">
+        <button class="secondary download" id="btnDescargar">⬇ Descargar .txt</button>
+        <button class="secondary" id="btnCopiar">Copiar</button>
+      </div>
+    </div>
+
+    <p class="aviso-incompleto" id="avisoIncompleto">Completá General, Punto rojo, Mira 2x y Mira 4x.</p>
+    <div class="cta-fixed hidden" id="ctaFixed">
+      <button class="generate" id="btnCalibrar">Calibrar sensibilidad</button>
+    </div>
+  </section>
+
+  <!-- ============ VISTA: GENERAR ============ -->
+  <section class="wrap vista" id="vistaGenerar">
+    <header>
+      <div class="eyebrow">// Generador</div>
+      <h1>Generar<br>Sensibilidad</h1>
+    </header>
+
+    <div class="card">
+      <h2>01 · Dispositivo</h2>
+      <label for="nombreGen">Nombre del dispositivo (opcional)</label>
+      <input type="text" id="nombreGen" placeholder="Ej: Samsung A54">
+
+      <label for="modeloGen">Modelo de celular</label>
+      <select id="modeloGen">
+        <option value="">Elegí un modelo</option>
+        <optgroup label="Gama baja">
+          <option value="baja">Samsung Galaxy A14 / A15</option>
+          <option value="baja">Redmi 12 / Redmi A3</option>
+          <option value="baja">Moto G23 / G04</option>
+          <option value="baja">Infinix Hot 40 / Tecno Spark</option>
+        </optgroup>
+        <optgroup label="Gama media">
+          <option value="media">Samsung Galaxy A34</option>
+          <option value="media">Samsung Galaxy A54 / A55</option>
+          <option value="media">Redmi Note 13 Pro / Note 14</option>
+          <option value="media">Poco X6 / X6 Pro</option>
+          <option value="media">Moto G84 / G85</option>
+        </optgroup>
+        <optgroup label="Gama alta">
+          <option value="alta">Samsung Galaxy S24 / S25</option>
+          <option value="alta">iPhone 15 / 16</option>
+          <option value="alta">Xiaomi 14 / 15</option>
+          <option value="alta">Poco F6 Pro</option>
+        </optgroup>
+        <optgroup label="Gama gamer">
+          <option value="gamer">ASUS ROG Phone 8 / 9</option>
+          <option value="gamer">RedMagic 9 / 10 Pro</option>
+          <option value="gamer">iQOO Neo / Z gaming</option>
+        </optgroup>
+        <option value="media">Otro / no está en la lista</option>
+      </select>
+    </div>
+
+    <p class="aviso-incompleto" id="avisoGenerar">Elegí un modelo de celular.</p>
+    <div class="cta-fixed hidden" id="ctaGenerar">
+      <button class="generate" id="btnGenerar">Generar sensibilidad</button>
+    </div>
+
+    <div class="card hidden" id="resultadoGenerar">
+      <span class="ready-tag">✅ Configuración generada</span>
+      <canvas id="canvasResultado" width="600" height="760"></canvas>
+    </div>
+  </section>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
